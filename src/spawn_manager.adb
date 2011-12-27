@@ -1,3 +1,6 @@
+with Ada.Text_IO;
+with Ada.Command_Line;
+
 with GNAT.OS_Lib;
 
 with ZMQ.Sockets;
@@ -14,10 +17,17 @@ is
    S      : Sockets.Socket;
    Result : constant String := "OK";
 begin
+   if Ada.Command_Line.Argument_Count /= 1 then
+      Ada.Text_IO.Put_Line ("Usage: " & Ada.Command_Line.Command_Name
+                            & " <address>");
+      Ada.Command_Line.Set_Exit_Status (Code => Ada.Command_Line.Failure);
+      return;
+   end if;
+
    Ctx.Initialize (App_Threads => 1);
    S.Initialize (With_Context => Ctx,
                  Kind         => Sockets.REP);
-   S.Bind (Address => "ipc:///tmp/spawn_manager");
+   S.Bind (Address => Ada.Command_Line.Argument (1));
 
    loop
       declare
@@ -29,7 +39,7 @@ begin
 
          declare
             Command : constant String := Request.getData;
-            Args    : constant GNAT.OS_Lib.Argument_List_Access
+            Args    : GNAT.OS_Lib.Argument_List_Access
               := GNAT.OS_Lib.Argument_String_To_List (Arg_String => Command);
             Status  : Boolean;
          begin
@@ -37,6 +47,7 @@ begin
               (Program_Name => Args (Args'First).all,
                Args         => Args (Args'First + 1 .. Args'Last),
                Success      => Status);
+            GNAT.OS_Lib.Free (Arg => Args);
 
             declare
                Reply  : Messages.Message;

@@ -1,7 +1,7 @@
 package Spawn.Pool is
 
    procedure Init;
-   --  Init client.
+   --  Init spawn pool.
 
    procedure Execute (Command : String);
    --  Execute given command.
