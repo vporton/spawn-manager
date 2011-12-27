@@ -1,7 +1,7 @@
 package Spawn.Pool is
 
-   procedure Init;
-   --  Init spawn pool.
+   procedure Init (Manager_Count : Positive := 1);
+   --  Init pool with given number of spawn managers.
 
    procedure Execute (Command : String);
    --  Execute given command.

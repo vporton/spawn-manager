@@ -112,48 +112,53 @@ package body Spawn.Pool is
 
    -------------------------------------------------------------------------
 
-   procedure Init
+   procedure Init (Manager_Count : Positive := 1)
    is
       use type GNAT.OS_Lib.Process_Id;
 
-      Pid  : GNAT.Expect.Process_Descriptor;
       Args : GNAT.OS_Lib.Argument_List_Access;
-      Addr : constant String := "ipc://" & Addr_Base
-        & Random_String (Len => 8);
    begin
       Ctx.Initialize (App_Threads => 1);
 
-      Args := GNAT.OS_Lib.Argument_String_To_List
-        (Arg_String => Mngr_Bin & " " & Addr);
+      for M in 1 .. Manager_Count loop
+         declare
+            Pid  : GNAT.Expect.Process_Descriptor;
+            Addr : constant String := "ipc://" & Addr_Base
+              & Random_String (Len => 8);
+         begin
+            Args := GNAT.OS_Lib.Argument_String_To_List
+              (Arg_String => Mngr_Bin & " " & Addr);
 
-      begin
-         GNAT.Expect.Non_Blocking_Spawn
-           (Descriptor  => Pid,
-            Command     => Args (Args'First).all,
-            Args        => Args (Args'First + 1 .. Args'Last),
-            Buffer_Size => 0);
+            begin
+               GNAT.Expect.Non_Blocking_Spawn
+                 (Descriptor  => Pid,
+                  Command     => Args (Args'First).all,
+                  Args        => Args (Args'First + 1 .. Args'Last),
+                  Buffer_Size => 0);
 
-      exception
-         when GNAT.Expect.Invalid_Process =>
-            GNAT.OS_Lib.Free (X => Args (1));
-            raise Command_Failed with "Could not initialize spawn pool";
-      end;
+            exception
+               when GNAT.Expect.Invalid_Process =>
+                  GNAT.OS_Lib.Free (Args);
+                  raise Command_Failed with "Could not initialize spawn pool";
+            end;
 
-      GNAT.OS_Lib.Free (Args);
+            GNAT.OS_Lib.Free (Args);
 
-      --  TODO: Handle case where no socket exists -> no exception raised
+            --  TODO: Handle case where no socket exists -> no exception raised
 
-      declare
-         Sock : Socket_Handle := new ZMQ.Sockets.Socket;
-      begin
-         Sock.Initialize (With_Context => Ctx,
-                          Kind         => ZMQ.Sockets.REQ);
-         Sock.Connect (Address => Addr);
-         Insert_Socket (S => (Address => To_Unbounded_String (Addr),
-                              Pid     => Pid,
-                              Handle  => Sock,
-                              Busy    => False));
-      end;
+            declare
+               Sock : Socket_Handle := new ZMQ.Sockets.Socket;
+            begin
+               Sock.Initialize (With_Context => Ctx,
+                                Kind         => ZMQ.Sockets.REQ);
+               Sock.Connect (Address => Addr);
+               Insert_Socket (S => (Address => To_Unbounded_String (Addr),
+                                    Pid     => Pid,
+                                    Handle  => Sock,
+                                    Busy    => False));
+            end;
+         end;
+      end loop;
    end Init;
 
    -------------------------------------------------------------------------
