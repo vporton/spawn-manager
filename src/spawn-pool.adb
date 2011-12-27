@@ -1,6 +1,8 @@
 with Ada.Text_IO;
 with Ada.Directories;
 with Ada.Numerics.Discrete_Random;
+with Ada.Containers.Ordered_Maps;
+with Ada.Strings.Unbounded;
 
 with GNAT.OS_Lib;
 
@@ -12,13 +14,20 @@ with Types;
 
 package body Spawn.Pool is
 
-   use ZMQ;
+   use Ada.Strings.Unbounded;
 
-   Ctx : Contexts.Context;
-   S   : Sockets.Socket;
+   Ctx : ZMQ.Contexts.Context;
+
+   type Socket_Handle is access ZMQ.Sockets.Socket;
 
    Mngr_Bin  : constant String := "obj/spawn_manager";
    Addr_Base : constant String := "/tmp/spawn_manager-";
+
+   package Socket_Map_Package is new Ada.Containers.Ordered_Maps
+     (Key_Type     => Unbounded_String,
+      Element_Type => Socket_Handle);
+   Sockets : Socket_Map_Package.Map;
+   --  Sockets to spawn managers.
 
    subtype Chars is Character range 'a' .. 'z';
    package Random_Chars is new Ada.Numerics.Discrete_Random
@@ -32,18 +41,18 @@ package body Spawn.Pool is
 
    procedure Execute (Command : String)
    is
-      Query : Messages.Message;
+      Query : ZMQ.Messages.Message;
    begin
       Query.Initialize (Data => Command);
-      S.Send (Msg => Query);
+      Sockets.First_Element.Send (Msg => Query);
       Query.Finalize;
 
       declare
-         Resultset : Messages.Message;
+         Resultset : ZMQ.Messages.Message;
          Data      : Types.Data_Type;
       begin
          Resultset.Initialize;
-         S.recv (Msg => Resultset);
+         Sockets.First_Element.recv (Msg => Resultset);
 
          Data := Types.Deserialize (Buffer => Resultset.getData);
          if Data.Success /= True then
@@ -66,8 +75,6 @@ package body Spawn.Pool is
         & Random_String (Len => 8);
    begin
       Ctx.Initialize (App_Threads => 1);
-      S.Initialize (With_Context => Ctx,
-                    Kind         => Sockets.REQ);
 
       Args (1) := new String'(Addr);
       Pid := GNAT.OS_Lib.Non_Blocking_Spawn
@@ -81,7 +88,15 @@ package body Spawn.Pool is
 
       --  TODO: Handle case where no socket exists -> no exception raised
 
-      S.Connect (Address => Addr);
+      declare
+         Sock : Socket_Handle := new ZMQ.Sockets.Socket;
+      begin
+         Sock.Initialize (With_Context => Ctx,
+                          Kind         => ZMQ.Sockets.REQ);
+         Sock.Connect (Address => Addr);
+         Sockets.Insert (Key      => To_Unbounded_String (Addr),
+                         New_Item => Sock);
+      end;
    end Init;
 
    -------------------------------------------------------------------------
