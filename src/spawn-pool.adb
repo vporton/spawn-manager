@@ -32,6 +32,7 @@ package body Spawn.Pool is
 
    type Socket_Container is record
       Address : Unbounded_String;
+      Pid     : GNAT.Expect.Process_Descriptor;
       Handle  : Socket_Handle;
       Busy    : Boolean;
    end record;
@@ -67,6 +68,8 @@ package body Spawn.Pool is
       while SOMP.Has_Element (Position => Pos) loop
          E := SOMP.Element (Position => Pos);
          E.Handle.Close;
+         GNAT.Expect.Close (Descriptor => E.Pid);
+
          Free (X => E.Handle);
          SOMP.Next (Position => Pos);
       end loop;
@@ -147,6 +150,7 @@ package body Spawn.Pool is
                           Kind         => ZMQ.Sockets.REQ);
          Sock.Connect (Address => Addr);
          Insert_Socket (S => (Address => To_Unbounded_String (Addr),
+                              Pid     => Pid,
                               Handle  => Sock,
                               Busy    => False));
       end;
