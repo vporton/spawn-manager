@@ -2,6 +2,7 @@ with Ada.Text_IO;
 with Ada.Numerics.Discrete_Random;
 with Ada.Containers.Ordered_Maps;
 with Ada.Strings.Unbounded;
+with Ada.Unchecked_Deallocation;
 
 with GNAT.OS_Lib;
 
@@ -22,6 +23,11 @@ package body Spawn.Pool is
    use Ada.Strings.Unbounded;
 
    type Socket_Handle is access ZMQ.Sockets.Socket;
+
+   procedure Free is new Ada.Unchecked_Deallocation
+     (Object => ZMQ.Sockets.Socket,
+      Name   => Socket_Handle);
+   --  Free allocated socket memory.
 
    type Socket_Container is record
       Address : Unbounded_String;
@@ -49,6 +55,21 @@ package body Spawn.Pool is
 
    function Random_String (Len : Positive) return String;
    --  Return a random string of given length.
+
+   -------------------------------------------------------------------------
+
+   procedure Cleanup
+   is
+      E   : Socket_Container;
+      Pos : SOMP.Cursor := Sockets.First;
+   begin
+      while SOMP.Has_Element (Position => Pos) loop
+         E := SOMP.Element (Position => Pos);
+         E.Handle.Close;
+         Free (X => E.Handle);
+         SOMP.Next (Position => Pos);
+      end loop;
+   end Cleanup;
 
    -------------------------------------------------------------------------
 

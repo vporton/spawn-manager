@@ -39,4 +39,5 @@ begin
    Ada.Text_IO.Put_Line ("* GNAT Spawn:"
                          & Duration'Image (Runtime / Loops));
 
+   Spawn.Pool.Cleanup;
 end Performance;
