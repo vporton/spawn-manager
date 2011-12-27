@@ -5,6 +5,7 @@ with Ada.Strings.Unbounded;
 with Ada.Unchecked_Deallocation;
 
 with GNAT.OS_Lib;
+with GNAT.Expect;
 
 with ZMQ.Sockets;
 with ZMQ.Contexts;
@@ -112,22 +113,30 @@ package body Spawn.Pool is
    is
       use type GNAT.OS_Lib.Process_Id;
 
-      Args : GNAT.OS_Lib.Argument_List (1 .. 1);
-      Pid  : GNAT.OS_Lib.Process_Id;
+      Pid  : GNAT.Expect.Process_Descriptor;
+      Args : GNAT.OS_Lib.Argument_List_Access;
       Addr : constant String := "ipc://" & Addr_Base
         & Random_String (Len => 8);
    begin
       Ctx.Initialize (App_Threads => 1);
 
-      Args (1) := new String'(Addr);
-      Pid := GNAT.OS_Lib.Non_Blocking_Spawn
-        (Program_Name => Mngr_Bin,
-         Args         => Args);
-      GNAT.OS_Lib.Free (X => Args (1));
+      Args := GNAT.OS_Lib.Argument_String_To_List
+        (Arg_String => Mngr_Bin & " " & Addr);
 
-      if Pid = GNAT.OS_Lib.Invalid_Pid then
-         raise Command_Failed with "Could not initialize spawn pool";
-      end if;
+      begin
+         GNAT.Expect.Non_Blocking_Spawn
+           (Descriptor  => Pid,
+            Command     => Args (Args'First).all,
+            Args        => Args (Args'First + 1 .. Args'Last),
+            Buffer_Size => 0);
+
+      exception
+         when GNAT.Expect.Invalid_Process =>
+            GNAT.OS_Lib.Free (X => Args (1));
+            raise Command_Failed with "Could not initialize spawn pool";
+      end;
+
+      GNAT.OS_Lib.Free (Args);
 
       --  TODO: Handle case where no socket exists -> no exception raised
 
