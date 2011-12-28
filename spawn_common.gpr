@@ -1,9 +1,6 @@
-project Spawn_Manager is
+project Spawn_Common is
 
-   for Source_Dirs use ("src", "zeromq-Ada/src");
-   for Object_Dir use "obj";
-
-   for Main use ("performance", "spawn_manager");
+   for Source_Dirs use ();
 
    Compiler_Switches := ("-gnatygAdISuxo",
                          "-gnatVa",
@@ -13,10 +10,4 @@ project Spawn_Manager is
                          "-fstack-check",
                          "-gnato",
                          "-g");
-
-   package Compiler is
-      for Default_Switches ("ada") use Compiler_Switches;
-   end Compiler;
-
-end Spawn_Manager;
-
+end Spawn_Common;
