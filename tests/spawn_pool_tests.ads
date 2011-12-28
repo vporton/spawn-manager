@@ -13,4 +13,7 @@ package Spawn_Pool_Tests is
    procedure Execute_Bin_False;
    --  Execute /bin/false, should raise an exception.
 
+   procedure Parallel_Execution;
+   --  Verify parallel command execution.
+
 end Spawn_Pool_Tests;

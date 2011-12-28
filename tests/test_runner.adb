@@ -12,7 +12,7 @@ procedure Test_Runner is
    S : constant Test_Suite_Access
      := Create_Suite (Suite_Name => "0MQ/Spawn tests");
 begin
-   Spawn.Pool.Init;
+   Spawn.Pool.Init (Manager_Count => 4);
 
    Add_Test (Suite => S.all,
              T     => new Spawn_Pool_Tests.Testcase);
@@ -23,4 +23,9 @@ begin
    Release_Suite (T => S);
 
    Spawn.Pool.Cleanup;
+
+exception
+   when others =>
+      Spawn.Pool.Cleanup;
+      raise;
 end Test_Runner;
