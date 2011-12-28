@@ -179,7 +179,7 @@ package body Spawn.Pool is
             exception
                when GNAT.Expect.Invalid_Process =>
                   GNAT.OS_Lib.Free (Args);
-                  raise Command_Failed with "Could not initialize spawn pool";
+                  raise Command_Failed with "Unable to fork " & Mngr_Bin;
             end;
 
             GNAT.OS_Lib.Free (Args);
