@@ -1,6 +1,7 @@
 with Ada.Text_IO;
 with Ada.Command_Line;
 with Ada.Strings.Unbounded;
+with Ada.Directories;
 
 with GNAT.OS_Lib;
 
@@ -44,9 +45,14 @@ begin
             Args   : GNAT.OS_Lib.Argument_List_Access
               := GNAT.OS_Lib.Argument_String_To_List
                 (Arg_String => To_String (Data.Command));
+            Dir    : constant String := To_String (Data.Dir);
             Status : Boolean;
          begin
             exit when Data.Do_Quit;
+
+            if Dir /= Ada.Directories.Current_Directory then
+               Ada.Directories.Set_Directory (Directory => Dir);
+            end if;
 
             GNAT.OS_Lib.Spawn
               (Program_Name => Args (Args'First).all,
