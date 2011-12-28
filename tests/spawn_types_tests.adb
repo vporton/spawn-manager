@@ -14,11 +14,13 @@ package body Spawn_Types_Tests is
 
    procedure Deserialize_Data
    is
-      Stream : constant Stream_Element_Array := (1, 97, 98, 99);
+      Stream : constant Stream_Element_Array := (1, 1, 97, 98, 99);
       Data   : constant Data_Type            := Deserialize (Buffer => Stream);
    begin
       Assert (Condition => Data.Success = True,
               Message   => "Status field incorrect");
+      Assert (Condition => Data.Do_Quit = True,
+              Message   => "Quit field incorrect");
       Assert (Condition => Data.Command = "abc",
               Message   => "Command field incorrect");
    end Deserialize_Data;
@@ -43,15 +45,18 @@ package body Spawn_Types_Tests is
    is
       Request : constant Data_Type :=
         (Success => True,
+         Do_Quit => True,
          Command => To_Unbounded_String ("abc"));
       Ref_Cmd : constant Stream_Element_Array := (97, 98, 99);
       Stream  : constant Stream_Element_Array := Serialize (Data => Request);
    begin
-      Assert (Condition => Stream'Length = 4,
+      Assert (Condition => Stream'Length = 5,
               Message   => "Length incorrect");
       Assert (Condition => Stream (1) = 1,
               Message   => "Status data incorrect");
-      Assert (Condition => Stream (2 .. 4) = Ref_Cmd,
+      Assert (Condition => Stream (2) = 1,
+              Message   => "Quit flag incorrect");
+      Assert (Condition => Stream (3 .. 5) = Ref_Cmd,
               Message   => "Command data incorrect");
    end Serialize_Data;
 

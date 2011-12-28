@@ -19,9 +19,10 @@ package body Spawn.Types is
 
       Result : Data_Type;
    begin
-      Result.Success := Buffer (Buffer'First) = 1;
+      Result.Success := Buffer (Buffer'First)     = 1;
+      Result.Do_Quit := Buffer (Buffer'First + 1) = 1;
       Result.Command := To_Unbounded_String
-        (To_String (Buffer (Buffer'First + 1 .. Buffer'Last)));
+        (To_String (Buffer (Buffer'First + 2 .. Buffer'Last)));
       return Result;
    end Deserialize;
 
@@ -33,12 +34,13 @@ package body Spawn.Types is
    is
       Cmd_Len : constant Stream_Element_Offset := Stream_Element_Offset
         (Length (Data.Command));
-      Result  : Stream_Element_Array (1 .. 1 + Cmd_Len);
+      Result  : Stream_Element_Array (1 .. 2 + Cmd_Len);
    begin
       Result (1) := Boolean'Pos (Data.Success);
+      Result (2) := Boolean'Pos (Data.Do_Quit);
 
       if Cmd_Len /= 0 then
-         Result (2 .. 1 + Cmd_Len) := To_Stream (To_String (Data.Command));
+         Result (3 .. Result'Last) := To_Stream (To_String (Data.Command));
       end if;
 
       return Result;
