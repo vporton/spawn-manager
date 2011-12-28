@@ -1,4 +1,4 @@
-package body Types is
+package body Spawn.Types is
 
    -------------------------------------------------------------------------
 
@@ -26,4 +26,4 @@ package body Types is
       return Result;
    end Serialize;
 
-end Types;
+end Spawn.Types;

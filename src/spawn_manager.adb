@@ -7,7 +7,7 @@ with ZMQ.Sockets;
 with ZMQ.Contexts;
 with ZMQ.Messages;
 
-with Types;
+with Spawn.Types;
 
 procedure Spawn_Manager
 is
@@ -51,10 +51,10 @@ begin
 
             declare
                Reply  : Messages.Message;
-               Result : Types.Data_Type := (Success => Status);
+               Result : Spawn.Types.Data_Type := (Success => Status);
             begin
                Reply.Initialize
-                 (Data => Types.Serialize (Data => Result));
+                 (Data => Spawn.Types.Serialize (Data => Result));
 
                S.Send (Msg => Reply);
                Reply.Finalize;

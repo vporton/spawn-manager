@@ -11,7 +11,7 @@ with ZMQ.Sockets;
 with ZMQ.Contexts;
 with ZMQ.Messages;
 
-with Types;
+with Spawn.Types;
 
 package body Spawn.Pool is
 
@@ -19,7 +19,6 @@ package body Spawn.Pool is
 
    Mngr_Bin  : constant String := "obj/spawn_manager";
    Addr_Base : constant String := "/tmp/spawn_manager-";
-
 
    use Ada.Strings.Unbounded;
 

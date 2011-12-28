@@ -1,6 +1,6 @@
 with Ada.Streams;
 
-package Types is
+package Spawn.Types is
 
    type Data_Type is record
       Success : Boolean := False;
@@ -16,4 +16,4 @@ package Types is
       return Data_Type;
    --  Deserialize given data type.
 
-end Types;
+end Spawn.Types;
