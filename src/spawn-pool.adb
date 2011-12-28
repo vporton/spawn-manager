@@ -33,10 +33,10 @@ package body Spawn.Pool is
    --  Free allocated socket memory.
 
    type Socket_Container is record
-      Address : Unbounded_String;
-      Pid     : GNAT.Expect.Process_Descriptor;
-      Handle  : Socket_Handle;
-      Busy    : Boolean;
+      Address   : Unbounded_String;
+      Pid       : GNAT.Expect.Process_Descriptor;
+      Handle    : Socket_Handle;
+      Available : Boolean;
    end record;
 
    package Socket_Map_Package is new Ada.Containers.Ordered_Maps
@@ -127,12 +127,12 @@ package body Spawn.Pool is
          Element : in out Socket_Container)
       is
       begin
-         Element.Busy := True;
+         Element.Available := False;
       end Set_Busy;
    begin
       while SOMP.Has_Element (Position => Pos) loop
          E := SOMP.Element (Position => Pos);
-         if not E.Busy then
+         if E.Available then
             pragma Debug (L.Log ("Found available socket "
               & To_String (E.Address)));
             Sockets.Update_Element (Position => Pos,
@@ -192,10 +192,10 @@ package body Spawn.Pool is
                Sock.Initialize (With_Context => Ctx,
                                 Kind         => ZMQ.Sockets.REQ);
                Sock.Connect (Address => Addr);
-               Insert_Socket (S => (Address => To_Unbounded_String (Addr),
-                                    Pid     => Pid,
-                                    Handle  => Sock,
-                                    Busy    => False));
+               Insert_Socket (S => (Address   => To_Unbounded_String (Addr),
+                                    Pid       => Pid,
+                                    Handle    => Sock,
+                                    Available => True));
             end;
          end;
       end loop;
@@ -237,7 +237,7 @@ package body Spawn.Pool is
          Element : in out Socket_Container)
       is
       begin
-         Element.Busy := False;
+         Element.Available := True;
       end Set_Available;
 
       Pos : SOMP.Cursor := Sockets.First;
