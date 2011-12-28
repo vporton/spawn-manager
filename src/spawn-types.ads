@@ -7,6 +7,7 @@ package Spawn.Types is
       Success : Boolean := False;
       Do_Quit : Boolean := False;
       Command : Ada.Strings.Unbounded.Unbounded_String;
+      Dir     : Ada.Strings.Unbounded.Unbounded_String;
    end record;
 
    Shutdown_Token : constant Data_Type;
