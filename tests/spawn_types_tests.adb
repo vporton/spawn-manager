@@ -26,7 +26,7 @@ package body Spawn_Types_Tests is
       Data2   : constant Data_Type := Deserialize (Buffer => Stream2);
       Data3   : constant Data_Type := Deserialize (Buffer => Stream3);
    begin
-      Assert (Condition => Data0.Success = True,
+      Assert (Condition => Data0.Success,
               Message   => "Status field incorrect");
       Assert (Condition => Data0.Do_Quit = False,
               Message   => "Quit field incorrect");
@@ -35,9 +35,9 @@ package body Spawn_Types_Tests is
       Assert (Condition => Data0.Dir = Null_Unbounded_String,
               Message   => "Directory not null");
 
-      Assert (Condition => Data1.Success = True,
+      Assert (Condition => Data1.Success,
               Message   => "Status field incorrect");
-      Assert (Condition => Data1.Do_Quit = True,
+      Assert (Condition => Data1.Do_Quit,
               Message   => "Quit field incorrect");
       Assert (Condition => Data1.Command = "stu",
               Message   => "Command field incorrect: "
@@ -48,7 +48,7 @@ package body Spawn_Types_Tests is
 
       Assert (Condition => Data2.Success = False,
               Message   => "Status field incorrect");
-      Assert (Condition => Data2.Do_Quit = True,
+      Assert (Condition => Data2.Do_Quit,
               Message   => "Quit field incorrect");
       Assert (Condition => Data2.Command = Null_Unbounded_String,
               Message   => "Command not null");

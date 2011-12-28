@@ -15,9 +15,8 @@ is
    use Ada.Strings.Unbounded;
    use ZMQ;
 
-   Ctx    : Contexts.Context;
-   S      : Sockets.Socket;
-   Result : constant String := "OK";
+   Ctx : Contexts.Context;
+   S   : Sockets.Socket;
 begin
    if Ada.Command_Line.Argument_Count /= 1 then
       Ada.Text_IO.Put_Line ("Usage: " & Ada.Command_Line.Command_Name
@@ -57,8 +56,9 @@ begin
 
             declare
                Reply  : Messages.Message;
-               Result : Spawn.Types.Data_Type := (Success => Status,
-                                                  others  => <>);
+               Result : constant Spawn.Types.Data_Type
+                 := (Success => Status,
+                     others  => <>);
             begin
                Reply.Initialize
                  (Data => Spawn.Types.Serialize (Data => Result));

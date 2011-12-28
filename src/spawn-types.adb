@@ -12,8 +12,6 @@ package body Spawn.Types is
      (Buffer : Ada.Streams.Stream_Element_Array)
       return Data_Type
    is
-      use type Ada.Streams.Stream_Element;
-
       Result : Data_Type;
    begin
       Result.Success := Buffer (Buffer'First)     = 1;

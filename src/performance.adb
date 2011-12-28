@@ -15,7 +15,7 @@ is
    Start   : Ada.Calendar.Time;
    Args    : constant GNAT.OS_Lib.Argument_List_Access
      := GNAT.OS_Lib.Argument_String_To_List (Arg_String => Cmd);
-   Status  : Integer;
+   Status  : Boolean;
 begin
    Spawn.Pool.Init;
 
@@ -31,9 +31,10 @@ begin
    Runtime := Duration (0);
    for I in  1 .. Loops loop
       Start := Ada.Calendar.Clock;
-      Status := GNAT.OS_Lib.Spawn
+      GNAT.OS_Lib.Spawn
         (Program_Name => Args (Args'First).all,
-         Args         => Args (Args'First + 1 .. Args'Last));
+         Args         => Args (Args'First + 1 .. Args'Last),
+         Success      => Status);
       Runtime := Runtime + (Ada.Calendar.Clock - Start);
    end loop;
    Ada.Text_IO.Put_Line ("* GNAT Spawn:" & Duration'Image (Runtime / Loops));

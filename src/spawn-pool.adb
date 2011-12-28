@@ -1,4 +1,3 @@
-with Ada.Text_IO;
 with Ada.Numerics.Discrete_Random;
 with Ada.Containers.Ordered_Maps;
 with Ada.Strings.Unbounded;
@@ -99,20 +98,12 @@ package body Spawn.Pool is
          Data      : Types.Data_Type;
       begin
          Resultset.Initialize;
-         select
-            delay 2.0;
-            Resultset.Finalize;
-            raise Command_Failed with "No response received for command: '"
-              & Command & "'";
-
-         then abort
-            Cont.Handle.recv (Msg => Resultset);
-         end select;
+         Cont.Handle.recv (Msg => Resultset);
 
          Data := Types.Deserialize (Buffer => Resultset.getData);
          Sockets.Release_Socket (C => Cont);
 
-         if Data.Success /= True then
+         if not Data.Success then
             raise Command_Failed with "Command failed: '" & Command & "'";
          end if;
 
@@ -157,7 +148,7 @@ package body Spawn.Pool is
             --  TODO: Handle case where no socket exists -> no exception raised
 
             declare
-               Sock : Socket_Handle := new ZMQ.Sockets.Socket;
+               Sock : constant Socket_Handle := new ZMQ.Sockets.Socket;
             begin
                Sock.Initialize (With_Context => Ctx,
                                 Kind         => ZMQ.Sockets.REQ);
@@ -231,6 +222,7 @@ package body Spawn.Pool is
            (Key     :        Unbounded_String;
             Element : in out Socket_Container)
          is
+            pragma Unreferenced (Key);
          begin
             Element.Available := False;
          end Set_Busy;
@@ -279,11 +271,12 @@ package body Spawn.Pool is
            (Key     :        Unbounded_String;
             Element : in out Socket_Container)
          is
+            pragma Unreferenced (Key);
          begin
             Element.Available := True;
          end Set_Available;
 
-         Pos : SOMP.Cursor := Data.Find (Key => C.Address);
+         Pos : constant SOMP.Cursor := Data.Find (Key => C.Address);
       begin
          Data.Update_Element (Position => Pos,
                               Process  => Set_Available'Access);
