@@ -16,4 +16,7 @@ package Spawn_Pool_Tests is
    procedure Parallel_Execution;
    --  Verify parallel command execution.
 
+   procedure Pool_Depleted;
+   --  Verify exception handling if pool is depleted.
+
 end Spawn_Pool_Tests;
