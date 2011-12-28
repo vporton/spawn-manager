@@ -47,6 +47,8 @@ begin
                 (Arg_String => To_String (Data.Command));
             Status : Boolean;
          begin
+            exit when Data.Do_Quit;
+
             GNAT.OS_Lib.Spawn
               (Program_Name => Args (Args'First).all,
                Args         => Args (Args'First + 1 .. Args'Last),
@@ -68,4 +70,7 @@ begin
          end;
       end;
    end loop;
+
+   S.Close;
+   Ctx.Finalize;
 end Spawn_Manager;

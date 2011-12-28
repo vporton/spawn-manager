@@ -69,13 +69,17 @@ package body Spawn.Pool is
    is
       E   : Socket_Container;
       Pos : SOMP.Cursor := Sockets.First;
+      Req : ZMQ.Messages.Message;
    begin
+      Req.Initialize (Data => Types.Serialize (Data => Types.Shutdown_Token));
+
       while SOMP.Has_Element (Position => Pos) loop
          E := SOMP.Element (Position => Pos);
-         E.Handle.Close;
-         GNAT.Expect.Close (Descriptor => E.Pid);
 
+         E.Handle.Send (Msg => Req);
+         E.Handle.Close;
          Free (X => E.Handle);
+
          SOMP.Next (Position => Pos);
       end loop;
 
