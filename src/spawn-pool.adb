@@ -102,7 +102,7 @@ package body Spawn.Pool is
          Release_Socket (H => Sock);
 
          if Data.Success /= True then
-            raise Command_Failed with "Could not execute command";
+            raise Command_Failed with "Command failed: '" & Command & "'";
          end if;
 
          Resultset.Finalize;

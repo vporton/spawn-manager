@@ -1,0 +1,35 @@
+with "ahven";
+with "spawn_common";
+
+project Spawn_Tests is
+
+   type Build_Type is ("tests", "coverage");
+   Build : Build_Type := external ("BUILD", "tests");
+
+   for Main use ("spawn_manager", "test_runner.adb");
+   for Source_Dirs use ("src", "tests", "zeromq-Ada/src");
+
+   Compiler_Switches := Spawn_Common.Compiler_Switches & "-gnata";
+   Linker_Switches   := ();
+
+   case Build is
+      when "tests" =>
+         for Object_Dir use "obj";
+
+      when "coverage" =>
+         for Object_Dir use "obj/cov";
+         Compiler_Switches := Compiler_Switches
+           & ("-ftest-coverage", "-fprofile-arcs");
+         Linker_Switches   := Linker_Switches
+           & ("-fprofile-generate");
+   end case;
+
+   package Compiler is
+      for Default_Switches ("ada") use Compiler_Switches;
+   end Compiler;
+
+   package Linker is
+      for Default_Switches ("ada") use Linker_Switches;
+   end Linker;
+
+end Spawn_Tests;
