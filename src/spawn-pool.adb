@@ -12,6 +12,7 @@ with ZMQ.Contexts;
 with ZMQ.Messages;
 
 with Spawn.Types;
+with Spawn.Logger;
 
 package body Spawn.Pool is
 
@@ -21,6 +22,8 @@ package body Spawn.Pool is
    Addr_Base : constant String := "/tmp/spawn_manager-";
 
    use Ada.Strings.Unbounded;
+
+   package L renames Spawn.Logger;
 
    type Socket_Handle is access ZMQ.Sockets.Socket;
 
@@ -48,6 +51,9 @@ package body Spawn.Pool is
 
    function Get_Socket return Socket_Handle;
    --  Return non-busy socket from socket store, mark as busy.
+
+   procedure Release_Socket (H : Socket_Handle);
+   --  Release given socket (mark as available).
 
    subtype Chars is Character range 'a' .. 'z';
    package Random_Chars is new Ada.Numerics.Discrete_Random
@@ -93,6 +99,8 @@ package body Spawn.Pool is
          Sock.recv (Msg => Resultset);
 
          Data := Types.Deserialize (Buffer => Resultset.getData);
+         Release_Socket (H => Sock);
+
          if Data.Success /= True then
             raise Command_Failed with "Could not execute command";
          end if;
@@ -105,8 +113,41 @@ package body Spawn.Pool is
 
    function Get_Socket return Socket_Handle
    is
+      E   : Socket_Container;
+      Pos : SOMP.Cursor   := Sockets.First;
+      H   : Socket_Handle := null;
+
+      procedure Set_Busy
+        (Key     :        Unbounded_String;
+         Element : in out Socket_Container);
+      --  Set state of given socket container to busy.
+
+      procedure Set_Busy
+        (Key     :        Unbounded_String;
+         Element : in out Socket_Container)
+      is
+      begin
+         Element.Busy := True;
+      end Set_Busy;
    begin
-      return Sockets.First_Element.Handle;
+      while SOMP.Has_Element (Position => Pos) loop
+         E := SOMP.Element (Position => Pos);
+         if not E.Busy then
+            pragma Debug (L.Log ("Found available socket "
+              & To_String (E.Address)));
+            Sockets.Update_Element (Position => Pos,
+                                    Process  => Set_Busy'Access);
+            H := E.Handle;
+         end if;
+         SOMP.Next (Position => Pos);
+      end loop;
+
+      if H = null then
+         raise Command_Failed with
+           "No free spawn manager available, increase the pool size";
+      end if;
+
+      return H;
    end Get_Socket;
 
    -------------------------------------------------------------------------
@@ -181,6 +222,36 @@ package body Spawn.Pool is
 
       return Result;
    end Random_String;
+
+   -------------------------------------------------------------------------
+
+   procedure Release_Socket (H : Socket_Handle)
+   is
+      procedure Set_Available
+        (Key     :        Unbounded_String;
+         Element : in out Socket_Container);
+      --  Set state of given socket container to available.
+
+      procedure Set_Available
+        (Key     :        Unbounded_String;
+         Element : in out Socket_Container)
+      is
+      begin
+         Element.Busy := False;
+      end Set_Available;
+
+      Pos : SOMP.Cursor := Sockets.First;
+   begin
+      while SOMP.Has_Element (Position => Pos) loop
+         if SOMP.Element (Position => Pos).Handle = H then
+            pragma Debug (L.Log ("Releasing busy socket "
+              & To_String (SOMP.Element (Position => Pos).Address)));
+            Sockets.Update_Element (Position => Pos,
+                                    Process  => Set_Available'Access);
+         end if;
+         SOMP.Next (Position => Pos);
+      end loop;
+   end Release_Socket;
 
 begin
    Random_Chars.Reset (Gen => Generator);
