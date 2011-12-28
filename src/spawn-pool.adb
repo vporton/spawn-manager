@@ -78,12 +78,16 @@ package body Spawn.Pool is
 
    -------------------------------------------------------------------------
 
-   procedure Execute (Command : String)
+   procedure Execute
+     (Command   : String;
+      Directory : String := Ada.Directories.Current_Directory)
    is
       Query : ZMQ.Messages.Message;
       Cont  : Socket_Container;
-      Req   : Types.Data_Type := (Command => To_Unbounded_String (Command),
-                                  others  => <>);
+      Req   : constant Types.Data_Type
+        := (Command => To_Unbounded_String (Command),
+            Dir     => To_Unbounded_String (Directory),
+            others  => <>);
    begin
       Sockets.Get_Socket (S => Cont);
       pragma Debug (L.Log ("Executing command '" & Command & "' using socket "
