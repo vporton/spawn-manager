@@ -87,9 +87,13 @@ package body Spawn.Pool is
    procedure Execute (Command : String)
    is
       Query : ZMQ.Messages.Message;
-      Sock  : Socket_Handle := Get_Socket;
+      Sock  : Socket_Handle   := Get_Socket;
+      Req   : Types.Data_Type := (Command => To_Unbounded_String (Command),
+                                  others  => <>);
    begin
-      Query.Initialize (Data => Command);
+      pragma Debug (L.Log ("Executing command '" & Command & "'"));
+
+      Query.Initialize (Data => Types.Serialize (Data => Req));
       Sock.Send (Msg => Query);
       Query.Finalize;
 
@@ -98,7 +102,15 @@ package body Spawn.Pool is
          Data      : Types.Data_Type;
       begin
          Resultset.Initialize;
-         Sock.recv (Msg => Resultset);
+         select
+            delay 2.0;
+            Resultset.Finalize;
+            raise Command_Failed with "No response received for command: '"
+              & Command & "'";
+
+         then abort
+            Sock.recv (Msg => Resultset);
+         end select;
 
          Data := Types.Deserialize (Buffer => Resultset.getData);
          Release_Socket (H => Sock);

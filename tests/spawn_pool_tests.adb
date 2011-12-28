@@ -10,6 +10,7 @@ package body Spawn_Pool_Tests is
    is
    begin
       Spawn.Pool.Execute (Command => "/bin/false");
+      Fail (Message => "Exception expected");
 
    exception
       when Spawn.Pool.Command_Failed => null;

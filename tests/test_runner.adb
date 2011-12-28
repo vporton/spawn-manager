@@ -4,6 +4,7 @@ with Ahven.Framework;
 with Spawn.Pool;
 
 with Spawn_Pool_Tests;
+with Spawn_Types_Tests;
 
 procedure Test_Runner is
    use Ahven.Framework;
@@ -15,6 +16,8 @@ begin
 
    Add_Test (Suite => S.all,
              T     => new Spawn_Pool_Tests.Testcase);
+   Add_Test (Suite => S.all,
+             T     => new Spawn_Types_Tests.Testcase);
 
    Ahven.Text_Runner.Run (Suite => S);
    Release_Suite (T => S);

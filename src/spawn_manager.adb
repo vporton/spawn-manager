@@ -1,5 +1,6 @@
 with Ada.Text_IO;
 with Ada.Command_Line;
+with Ada.Strings.Unbounded;
 
 with GNAT.OS_Lib;
 
@@ -11,6 +12,7 @@ with Spawn.Types;
 
 procedure Spawn_Manager
 is
+   use Ada.Strings.Unbounded;
    use ZMQ;
 
    Ctx    : Contexts.Context;
@@ -34,14 +36,16 @@ begin
          Request : Messages.Message;
       begin
          Request.Initialize;
-         S.Recv (Msg   => Request,
+         S.recv (Msg   => Request,
                  Flags => 0);
 
          declare
-            Command : constant String := Request.getData;
-            Args    : GNAT.OS_Lib.Argument_List_Access
-              := GNAT.OS_Lib.Argument_String_To_List (Arg_String => Command);
-            Status  : Boolean;
+            Data   : constant Spawn.Types.Data_Type
+              := Spawn.Types.Deserialize (Buffer => Request.getData);
+            Args   : GNAT.OS_Lib.Argument_List_Access
+              := GNAT.OS_Lib.Argument_String_To_List
+                (Arg_String => To_String (Data.Command));
+            Status : Boolean;
          begin
             GNAT.OS_Lib.Spawn
               (Program_Name => Args (Args'First).all,
@@ -51,7 +55,8 @@ begin
 
             declare
                Reply  : Messages.Message;
-               Result : Spawn.Types.Data_Type := (Success => Status);
+               Result : Spawn.Types.Data_Type := (Success => Status,
+                                                  others  => <>);
             begin
                Reply.Initialize
                  (Data => Spawn.Types.Serialize (Data => Result));

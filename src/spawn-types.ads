@@ -1,9 +1,11 @@
 with Ada.Streams;
+with Ada.Strings.Unbounded;
 
 package Spawn.Types is
 
    type Data_Type is record
       Success : Boolean := False;
+      Command : Ada.Strings.Unbounded.Unbounded_String;
    end record;
 
    function Serialize
