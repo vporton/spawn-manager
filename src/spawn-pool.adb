@@ -78,6 +78,8 @@ package body Spawn.Pool is
          Free (X => E.Handle);
          SOMP.Next (Position => Pos);
       end loop;
+
+      Ctx.Finalize;
    end Cleanup;
 
    -------------------------------------------------------------------------
