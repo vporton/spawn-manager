@@ -5,5 +5,18 @@ project Spawn_Manager is
 
    for Main use ("performance", "spawn_manager");
 
+   Compiler_Switches := ("-gnatygAdISuxo",
+                         "-gnatVa",
+                         "-gnata",
+                         "-gnat05",
+                         "-gnatf",
+                         "-fstack-check",
+                         "-gnato",
+                         "-g");
+
+   package Compiler is
+      for Default_Switches ("ada") use Compiler_Switches;
+   end Compiler;
+
 end Spawn_Manager;
 
