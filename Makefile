@@ -6,13 +6,16 @@ all: spawn_tests
 spawn_tests:
 	@gnatmake -P$@ -p
 
-tests: spawn_tests
+tests: spawn_tests spawn_manager
 	@$(OBJDIR)/test_runner
+
+spawn_manager:
+	@gnatmake -P$@ -p
 
 spawn_performance:
 	@gnatmake -P$@ -p
 
-perf: spawn_performance
+perf: spawn_performance spawn_manager
 	@$(OBJDIR)/perf/performance
 
 cov:
@@ -26,4 +29,4 @@ cov:
 clean:
 	@rm -rf $(OBJDIR)
 
-PHONY: clean cov build perf spawn_performance spawn_tests tests
+PHONY: clean cov build perf spawn_performance spawn_manager spawn_tests tests
