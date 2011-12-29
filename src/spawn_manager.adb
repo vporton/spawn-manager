@@ -13,6 +13,9 @@ with Spawn.Types;
 
 procedure Spawn_Manager
 is
+   Shell : constant String := "/bin/bash";
+   --  Shell used to execute commands.
+
    use Ada.Strings.Unbounded;
    use ZMQ;
 
@@ -42,9 +45,7 @@ begin
          declare
             Data   : constant Spawn.Types.Data_Type
               := Spawn.Types.Deserialize (Buffer => Request.getData);
-            Args   : GNAT.OS_Lib.Argument_List_Access
-              := GNAT.OS_Lib.Argument_String_To_List
-                (Arg_String => To_String (Data.Command));
+            Args   : GNAT.OS_Lib.Argument_List (1 .. 4);
             Dir    : constant String := To_String (Data.Dir);
             Status : Boolean;
          begin
@@ -54,11 +55,19 @@ begin
                Ada.Directories.Set_Directory (Directory => Dir);
             end if;
 
+            Args (1) := new String'("-o");
+            Args (2) := new String'("pipefail");
+            Args (3) := new String'("-c");
+            Args (4) := new String'(To_String (Data.Command));
+
             GNAT.OS_Lib.Spawn
-              (Program_Name => Args (Args'First).all,
-               Args         => Args (Args'First + 1 .. Args'Last),
+              (Program_Name => Shell,
+               Args         => Args,
                Success      => Status);
-            GNAT.OS_Lib.Free (Arg => Args);
+
+            for A in Args'Range loop
+               GNAT.OS_Lib.Free (X => Args (A));
+            end loop;
 
             declare
                Reply  : Messages.Message;

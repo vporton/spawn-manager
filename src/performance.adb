@@ -10,11 +10,9 @@ is
    use type Ada.Calendar.Time;
 
    Loops   : constant        := 1000;
-   Cmd     : constant String := "/bin/bash -c /bin/true";
+   Cmd     : constant String := "true";
    Runtime : Duration        := Duration (0);
    Start   : Ada.Calendar.Time;
-   Args    : constant GNAT.OS_Lib.Argument_List_Access
-     := GNAT.OS_Lib.Argument_String_To_List (Arg_String => Cmd);
    Status  : Boolean;
 begin
    Spawn.Pool.Init;
@@ -29,14 +27,28 @@ begin
    Ada.Text_IO.Put_Line ("* IPC 0MQ   :" & Duration'Image (Runtime / Loops));
 
    Runtime := Duration (0);
-   for I in  1 .. Loops loop
-      Start := Ada.Calendar.Clock;
-      GNAT.OS_Lib.Spawn
-        (Program_Name => Args (Args'First).all,
-         Args         => Args (Args'First + 1 .. Args'Last),
-         Success      => Status);
-      Runtime := Runtime + (Ada.Calendar.Clock - Start);
-   end loop;
+
+   declare
+      Args : GNAT.OS_Lib.Argument_List (1 .. 4);
+   begin
+      Args (1) := new String'("-o");
+      Args (2) := new String'("pipefail");
+      Args (3) := new String'("-c");
+      Args (4) := new String'(Cmd);
+
+      for I in  1 .. Loops loop
+         Start := Ada.Calendar.Clock;
+         GNAT.OS_Lib.Spawn
+           (Program_Name => "/bin/bash",
+            Args         => Args,
+            Success      => Status);
+         Runtime := Runtime + (Ada.Calendar.Clock - Start);
+      end loop;
+
+      for A in Args'Range loop
+         GNAT.OS_Lib.Free (X => Args (A));
+      end loop;
+   end;
    Ada.Text_IO.Put_Line ("* GNAT Spawn:" & Duration'Image (Runtime / Loops));
 
    Spawn.Pool.Cleanup;

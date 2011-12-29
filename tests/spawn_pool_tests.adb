@@ -1,5 +1,6 @@
 with Ada.Text_IO;
 with Ada.Exceptions;
+with Ada.Directories;
 
 with Spawn.Pool;
 
@@ -55,6 +56,26 @@ package body Spawn_Pool_Tests is
 
    -------------------------------------------------------------------------
 
+   procedure Execute_Complex_Command
+   is
+      File : constant String := "obj/tmp.dat";
+      Cmd  : constant String := "dd if=/dev/zero bs=1 count=1 of=" & File
+        & " > /dev/null 2>&1";
+   begin
+      Spawn.Pool.Execute (Command => Cmd);
+
+      Assert (Condition => Ada.Directories.Exists (Name => File),
+              Message   => "File not found: " & File);
+      Ada.Directories.Delete_File (Name => File);
+
+   exception
+      when others =>
+         Ada.Directories.Delete_File (Name => File);
+         raise;
+   end Execute_Complex_Command;
+
+   -------------------------------------------------------------------------
+
    procedure Initialize (T : in out Testcase)
    is
    begin
@@ -65,6 +86,9 @@ package body Spawn_Pool_Tests is
       T.Add_Test_Routine
         (Routine => Execute_Bin_False'Access,
          Name    => "Execute /bin/false");
+      T.Add_Test_Routine
+        (Routine => Execute_Complex_Command'Access,
+         Name    => "Execute complex command");
       T.Add_Test_Routine
         (Routine => Parallel_Execution'Access,
          Name    => "Parallel execution");
