@@ -1,4 +1,3 @@
-with "ahven";
 with "spawn_common";
 
 project Spawn_Manager is
