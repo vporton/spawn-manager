@@ -1,4 +1,3 @@
-with Ada.Text_IO;
 with Ada.Command_Line;
 with Ada.Strings.Unbounded;
 with Ada.Directories;
@@ -23,8 +22,6 @@ is
    S   : Sockets.Socket;
 begin
    if Ada.Command_Line.Argument_Count /= 1 then
-      Ada.Text_IO.Put_Line ("Usage: " & Ada.Command_Line.Command_Name
-                            & " <address>");
       Ada.Command_Line.Set_Exit_Status (Code => Ada.Command_Line.Failure);
       return;
    end if;
