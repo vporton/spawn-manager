@@ -13,7 +13,7 @@ project Spawn_Manager is
    end Compiler;
 
    package Linker is
-      for Default_Switches ("ada") use ("-static", "-lzmq", "-lstdc++", "-lpgm");
+      for Default_Switches ("ada") use ("-static", "-lzmq", "-lstdc++");
    end Linker;
 
 end Spawn_Manager;
