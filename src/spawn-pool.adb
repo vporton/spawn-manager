@@ -46,7 +46,7 @@ package body Spawn.Pool is
 
    Ctx : ZMQ.Contexts.Context;
 
-   Mngr_Bin  : constant String := "obj/spawn_manager";
+   Mngr_Bin  : constant String := "spawn_manager";
    Addr_Base : constant String := "/tmp/spawn_manager-";
 
    use Ada.Strings.Unbounded;
