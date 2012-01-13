@@ -28,5 +28,5 @@
 --
 
 package Spawn is
-
+   pragma Linker_Options ("-lzmqAda");
 end Spawn;
