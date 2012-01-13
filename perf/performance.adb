@@ -33,6 +33,7 @@ with Ada.Calendar;
 with GNAT.OS_Lib;
 
 with Spawn.Pool;
+with Spawn.Utils;
 
 procedure Performance
 is
@@ -44,6 +45,7 @@ is
    Start   : Ada.Calendar.Time;
    Status  : Boolean;
 begin
+   Spawn.Utils.Expand_Search_Path (Cmd_Path => "obj/spawn_manager");
    Spawn.Pool.Init;
 
    Ada.Text_IO.Put_Line ("* Calling '" & Cmd & "'" & Loops'Img & " times");
