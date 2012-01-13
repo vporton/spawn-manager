@@ -7,7 +7,7 @@ COVDIR = $(OBJDIR)/cov
 
 GPR_FILE = gnat/spawn.gpr
 
-all: spawn_lib
+all: spawn_lib spawn_manager
 
 spawn_tests:
 	@gnatmake -P$@ -p
