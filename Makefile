@@ -16,7 +16,7 @@ tests: spawn_tests spawn_manager
 	@$(OBJDIR)/test_runner
 
 spawn_manager:
-	@gnatmake -P$@ -p
+	@gnatmake -P$@ -p -largs --LINK=g++
 
 spawn_performance:
 	@gnatmake -P$@ -p
