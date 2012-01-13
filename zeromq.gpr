@@ -1,0 +1,17 @@
+project Zeromq is
+
+   Source_Dirs := ("zeromq-Ada/src");
+   for Source_Dirs use Source_Dirs;
+   for Object_Dir use "obj/zeromq";
+
+   Compiler_Switches := ("-gnat05",
+                         "-fPIC",
+                         "-fstack-check",
+                         "-gnato",
+                         "-g");
+
+   package Compiler is
+      for Default_Switches ("ada") use Compiler_Switches;
+   end Compiler;
+
+end Zeromq;
