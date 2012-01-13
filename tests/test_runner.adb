@@ -31,6 +31,7 @@ with Ahven.Text_Runner;
 with Ahven.Framework;
 
 with Spawn.Pool;
+with Spawn.Utils;
 
 with Spawn_Pool_Tests;
 with Spawn_Types_Tests;
@@ -41,6 +42,7 @@ procedure Test_Runner is
    S : constant Test_Suite_Access
      := Create_Suite (Suite_Name => "0MQ/Spawn tests");
 begin
+   Spawn.Utils.Expand_Search_Path (Cmd_Path => "obj/spawn_manager");
    Spawn.Pool.Init (Manager_Count => 4);
 
    Add_Test (Suite => S.all,
