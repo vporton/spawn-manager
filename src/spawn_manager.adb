@@ -38,6 +38,7 @@ with ZMQ.Contexts;
 with ZMQ.Messages;
 
 with Spawn.Types;
+with Spawn.Utils;
 
 procedure Spawn_Manager
 is
@@ -54,6 +55,8 @@ begin
       Ada.Command_Line.Set_Exit_Status (Code => Ada.Command_Line.Failure);
       return;
    end if;
+
+   Spawn.Utils.Expand_Search_Path (Cmd_Path => Ada.Command_Line.Command_Name);
 
    Ctx.Initialize (App_Threads => 1);
    S.Initialize (With_Context => Ctx,
@@ -114,4 +117,5 @@ begin
 
    S.Close;
    Ctx.Finalize;
+   Ada.Command_Line.Set_Exit_Status (Code => Ada.Command_Line.Success);
 end Spawn_Manager;
