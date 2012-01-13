@@ -2,7 +2,7 @@ with "spawn_common";
 
 project Spawn_Performance is
 
-   for Source_Dirs use Spawn_Common.Source_Dirs;
+   for Source_Dirs use Spawn_Common.Source_Dirs & "perf";
    for Object_Dir use "obj/perf";
    for Main use ("performance");
 
