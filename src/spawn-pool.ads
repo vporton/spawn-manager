@@ -28,7 +28,7 @@
 --
 
 with Ada.Directories;
-private with Ada.Streams;
+with Ada.Streams;
 
 package Spawn.Pool is
 

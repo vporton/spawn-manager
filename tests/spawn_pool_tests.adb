@@ -27,11 +27,13 @@
 --  executable file might be covered by the GNU Public License.
 --
 
+with Ada.Streams;
 with Ada.Text_IO;
 with Ada.Exceptions;
 with Ada.Directories;
 
-with Spawn.Pool;
+with Spawn.Types;
+with Spawn.Pool.Test;
 
 package body Spawn_Pool_Tests is
 
@@ -140,6 +142,9 @@ package body Spawn_Pool_Tests is
         (Routine => Execute_Complex_Command'Access,
          Name    => "Execute complex command");
       T.Add_Test_Routine
+        (Routine => Send_Invalid_Data'Access,
+         Name    => "Send invalid data");
+      T.Add_Test_Routine
         (Routine => Parallel_Execution'Access,
          Name    => "Parallel execution");
       T.Add_Test_Routine
@@ -194,5 +199,23 @@ package body Spawn_Pool_Tests is
       Assert (Condition => not Result,
               Message   => "No call failed");
    end Pool_Depleted;
+
+   -------------------------------------------------------------------------
+
+   procedure Send_Invalid_Data
+   is
+      use Spawn;
+      use Ada.Streams;
+
+      Empty_Data : constant Stream_Element_Array (1 .. 0) := (others => <>);
+   begin
+      declare
+         Reply : constant Stream_Element_Array
+           := Pool.Test.Send_Receive (Request => Empty_Data);
+      begin
+         Assert (Condition => not Types.Deserialize (Buffer => Reply).Success,
+                 Message   => "Failure expected");
+      end;
+   end Send_Invalid_Data;
 
 end Spawn_Pool_Tests;

@@ -81,6 +81,7 @@ begin
                  Kind         => Sockets.REP);
    S.Bind (Address => Ada.Command_Line.Argument (1));
 
+   Main :
    loop
       declare
          Request : Messages.Message;
@@ -98,7 +99,7 @@ begin
             Dir    : constant String := To_String (Data.Dir);
             Status : Boolean;
          begin
-            exit when Data.Do_Quit;
+            exit Main when Data.Do_Quit;
 
             if Dir /= Ada.Directories.Current_Directory then
                Ada.Directories.Set_Directory (Directory => Dir);
@@ -120,8 +121,11 @@ begin
 
             Send_Reply (Success => Status);
          end;
+
+      exception
+         when others => Send_Reply (Success => False);
       end;
-   end loop;
+   end loop Main;
 
    S.Close;
    Ctx.Finalize;

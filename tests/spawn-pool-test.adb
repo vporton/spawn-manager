@@ -27,34 +27,18 @@
 --  executable file might be covered by the GNU Public License.
 --
 
-with Ahven.Framework;
+with Ada.Streams;
 
-package Spawn_Pool_Tests is
+package body Spawn.Pool.Test is
 
-   type Testcase is new Ahven.Framework.Test_Case with null record;
+   -------------------------------------------------------------------------
 
-   procedure Initialize (T : in out Testcase);
-   --  Initialize testcase.
+   function Send_Receive
+     (Request : Ada.Streams.Stream_Element_Array)
+      return Ada.Streams.Stream_Element_Array
+   is
+   begin
+      return Pool.Send_Receive (Request => Request);
+   end Send_Receive;
 
-   procedure Execute_Bin_True;
-   --  Execute /bin/true.
-
-   procedure Execute_Bin_False;
-   --  Execute /bin/false, should raise an exception.
-
-   procedure Execute_Nonexistent;
-   --  Execute nonexistent command, should raise an exception.
-
-   procedure Execute_Complex_Command;
-   --  Execute complex command.
-
-   procedure Send_Invalid_Data;
-   --  Send invalid data to manager.
-
-   procedure Parallel_Execution;
-   --  Verify parallel command execution.
-
-   procedure Pool_Depleted;
-   --  Verify exception handling if pool is depleted.
-
-end Spawn_Pool_Tests;
+end Spawn.Pool.Test;
