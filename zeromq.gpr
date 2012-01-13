@@ -2,7 +2,7 @@ project Zeromq is
 
    Source_Dirs := ("../zeromq-Ada/src");
    for Source_Dirs use Source_Dirs;
-   for Object_Dir use "obj/zeromq";
+   for Object_Dir use "lib";
 
    Compiler_Switches := ("-gnat05",
                          "-fPIC",
