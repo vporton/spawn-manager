@@ -7,7 +7,7 @@ project Spawn_Tests is
    Build : Build_Type := external ("BUILD", "tests");
 
    for Main use ("test_runner.adb");
-   for Source_Dirs use ("src", "tests", "zeromq-Ada/src");
+   for Source_Dirs use Spawn_Common.Source_Dirs & "tests";
 
    Compiler_Switches := Spawn_Common.Compiler_Switches & "-gnata";
    Linker_Switches   := ();

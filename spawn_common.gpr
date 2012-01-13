@@ -1,6 +1,7 @@
 project Spawn_Common is
 
    for Source_Dirs use ();
+   Source_Dirs := ("src", "zeromq-Ada/src");
 
    Compiler_Switches := ("-gnatygAdISuxo",
                          "-gnatVa",
