@@ -50,6 +50,24 @@ is
 
    Ctx : Contexts.Context;
    S   : Sockets.Socket;
+
+   procedure Send_Reply (Success : Boolean);
+   --  Send reply message indicating success or failure.
+
+   procedure Send_Reply (Success : Boolean)
+   is
+      Reply  : Messages.Message;
+      Result : constant Spawn.Types.Data_Type
+        := (Success => Success,
+            others  => <>);
+   begin
+      Reply.Initialize
+        (Data => Spawn.Types.Serialize (Data => Result));
+
+      S.Send (Msg => Reply);
+      Reply.Finalize;
+   end Send_Reply;
+
 begin
    if Ada.Command_Line.Argument_Count /= 1 then
       Ada.Command_Line.Set_Exit_Status (Code => Ada.Command_Line.Failure);
@@ -66,14 +84,16 @@ begin
    loop
       declare
          Request : Messages.Message;
+         Data    : Spawn.Types.Data_Type;
       begin
          Request.Initialize;
          S.recv (Msg   => Request,
                  Flags => 0);
 
+         Data := Spawn.Types.Deserialize (Buffer => Request.getData);
+         Request.Finalize;
+
          declare
-            Data   : constant Spawn.Types.Data_Type
-              := Spawn.Types.Deserialize (Buffer => Request.getData);
             Args   : GNAT.OS_Lib.Argument_List (1 .. 4);
             Dir    : constant String := To_String (Data.Dir);
             Status : Boolean;
@@ -98,19 +118,7 @@ begin
                GNAT.OS_Lib.Free (X => Args (A));
             end loop;
 
-            declare
-               Reply  : Messages.Message;
-               Result : constant Spawn.Types.Data_Type
-                 := (Success => Status,
-                     others  => <>);
-            begin
-               Reply.Initialize
-                 (Data => Spawn.Types.Serialize (Data => Result));
-
-               S.Send (Msg => Reply);
-               Reply.Finalize;
-            end;
-            Request.Finalize;
+            Send_Reply (Success => Status);
          end;
       end;
    end loop;
