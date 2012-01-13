@@ -111,37 +111,22 @@ package body Spawn.Pool is
      (Command   : String;
       Directory : String := Ada.Directories.Current_Directory)
    is
-      Query : ZMQ.Messages.Message;
-      Cont  : Socket_Container;
-      Req   : constant Types.Data_Type
+      Reply   : Types.Data_Type;
+      Request : constant Types.Data_Type
         := (Command => To_Unbounded_String (Command),
             Dir     => To_Unbounded_String (Directory),
             others  => <>);
    begin
-      Sockets.Get_Socket (S => Cont);
-      pragma Debug (L.Log ("Executing command '" & Command & "' using socket "
-        & To_String (Cont.Address)));
+      pragma Debug (L.Log ("Executing command '" & Command & "'"));
 
-      Query.Initialize (Data => Types.Serialize (Data => Req));
-      Cont.Handle.Send (Msg => Query);
-      Query.Finalize;
+      Reply := Types.Deserialize
+        (Buffer => Send_Receive
+           (Request => Types.Serialize
+              (Data => Request)));
 
-      declare
-         Resultset : ZMQ.Messages.Message;
-         Data      : Types.Data_Type;
-      begin
-         Resultset.Initialize;
-         Cont.Handle.recv (Msg => Resultset);
-
-         Data := Types.Deserialize (Buffer => Resultset.getData);
-         Sockets.Release_Socket (C => Cont);
-
-         if not Data.Success then
-            raise Command_Failed with "Command failed: '" & Command & "'";
-         end if;
-
-         Resultset.Finalize;
-      end;
+      if not Reply.Success then
+         raise Command_Failed with "Command failed: '" & Command & "'";
+      end if;
    end Execute;
 
    -------------------------------------------------------------------------
@@ -209,6 +194,37 @@ package body Spawn.Pool is
 
       return Result;
    end Random_String;
+
+   -------------------------------------------------------------------------
+
+   function Send_Receive
+     (Request : Ada.Streams.Stream_Element_Array)
+      return Ada.Streams.Stream_Element_Array
+   is
+      Cont     : Socket_Container;
+      Send_Msg : ZMQ.Messages.Message;
+      Rcv_Msg  : ZMQ.Messages.Message;
+   begin
+      Sockets.Get_Socket (S => Cont);
+      pragma Debug (L.Log ("Sending request using socket "
+        & To_String (Cont.Address)));
+
+      Send_Msg.Initialize (Data => Request);
+      Cont.Handle.Send (Msg => Send_Msg);
+      Send_Msg.Finalize;
+
+      Rcv_Msg.Initialize;
+      Cont.Handle.recv (Msg => Rcv_Msg);
+      Sockets.Release_Socket (C => Cont);
+
+      declare
+         Rcv_Data : constant Ada.Streams.Stream_Element_Array
+           := Rcv_Msg.getData;
+      begin
+         Rcv_Msg.Finalize;
+         return Rcv_Data;
+      end;
+   end Send_Receive;
 
    -------------------------------------------------------------------------
 

@@ -28,6 +28,7 @@
 --
 
 with Ada.Directories;
+private with Ada.Streams;
 
 package Spawn.Pool is
 
@@ -43,5 +44,13 @@ package Spawn.Pool is
    --  Cleanup spawn pool.
 
    Command_Failed : exception;
+
+private
+
+   function Send_Receive
+     (Request : Ada.Streams.Stream_Element_Array)
+      return Ada.Streams.Stream_Element_Array;
+   --  Send given data as request to spawn manager. Return data of received
+   --  reply.
 
 end Spawn.Pool;
