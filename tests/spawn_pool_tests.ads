@@ -42,6 +42,9 @@ package Spawn_Pool_Tests is
    procedure Execute_Bin_False;
    --  Execute /bin/false, should raise an exception.
 
+   procedure Execute_Nonexistent;
+   --  Execute nonexistent command, should raise an exception.
+
    procedure Execute_Complex_Command;
    --  Execute complex command.
 

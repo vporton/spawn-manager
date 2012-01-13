@@ -105,6 +105,24 @@ package body Spawn_Pool_Tests is
 
    -------------------------------------------------------------------------
 
+   procedure Execute_Nonexistent
+   is
+   begin
+      begin
+         Spawn.Pool.Execute (Command => "nonexistent/binary");
+         Fail (Message => "Exception expected");
+
+      exception
+         when Spawn.Pool.Command_Failed => null;
+      end;
+
+      --  Check if manager is still responding to requests.
+
+      Spawn.Pool.Execute (Command => "/bin/true");
+   end Execute_Nonexistent;
+
+   -------------------------------------------------------------------------
+
    procedure Initialize (T : in out Testcase)
    is
    begin
@@ -115,6 +133,9 @@ package body Spawn_Pool_Tests is
       T.Add_Test_Routine
         (Routine => Execute_Bin_False'Access,
          Name    => "Execute /bin/false");
+      T.Add_Test_Routine
+        (Routine => Execute_Nonexistent'Access,
+         Name    => "Execute nonexistent command");
       T.Add_Test_Routine
         (Routine => Execute_Complex_Command'Access,
          Name    => "Execute complex command");
