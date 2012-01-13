@@ -1,6 +1,6 @@
 project Zeromq is
 
-   Source_Dirs := ("zeromq-Ada/src");
+   Source_Dirs := ("../zeromq-Ada/src");
    for Source_Dirs use Source_Dirs;
    for Object_Dir use "obj/zeromq";
 
