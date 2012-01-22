@@ -236,19 +236,23 @@ package body Spawn.Pool is
       is
          E   : Socket_Container;
          Pos : SOMP.Cursor := Data.First;
-         Req : ZMQ.Messages.Message;
       begin
-         Req.Initialize (Data => Types.Serialize
-                         (Data => Types.Shutdown_Token));
-
          while SOMP.Has_Element (Position => Pos) loop
-            E := SOMP.Element (Position => Pos);
+            declare
+               Req : ZMQ.Messages.Message;
+            begin
+               Req.Initialize (Data => Types.Serialize
+                               (Data => Types.Shutdown_Token));
 
-            E.Handle.Send (Msg => Req);
-            E.Handle.Close;
-            Free (X => E.Handle);
+               E := SOMP.Element (Position => Pos);
 
-            SOMP.Next (Position => Pos);
+               E.Handle.Send (Msg => Req);
+               Req.Finalize;
+               E.Handle.Close;
+               Free (X => E.Handle);
+
+               SOMP.Next (Position => Pos);
+            end;
          end loop;
 
          Ctx.Finalize;
