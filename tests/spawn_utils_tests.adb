@@ -46,7 +46,22 @@ package body Spawn_Utils_Tests is
       T.Add_Test_Routine
         (Routine => Verify_Wait_For_Socket'Access,
          Name    => "Wait for sockets");
+      T.Add_Test_Routine
+        (Routine => Get_Random_Strings'Access,
+         Name    => "Get random strings");
    end Initialize;
+
+   -------------------------------------------------------------------------
+
+   procedure Get_Random_Strings
+   is
+   begin
+      Assert (Condition => Random_String (Len => 4)'Length = 4,
+              Message   => "Length incorrect");
+      Assert (Condition => Random_String (Len => 4) /=
+                Random_String (Len => 4),
+              Message   => "Strings match");
+   end Get_Random_Strings;
 
    -------------------------------------------------------------------------
 

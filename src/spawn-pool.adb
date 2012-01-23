@@ -27,7 +27,6 @@
 --  executable file might be covered by the GNU Public License.
 --
 
-with Ada.Numerics.Discrete_Random;
 with Ada.Containers.Ordered_Maps;
 with Ada.Strings.Unbounded;
 with Ada.Unchecked_Deallocation;
@@ -90,14 +89,6 @@ package body Spawn.Pool is
       Data : SOMP.Map;
    end Sockets;
 
-   subtype Chars is Character range 'a' .. 'z';
-   package Random_Chars is new Ada.Numerics.Discrete_Random
-     (Result_Subtype => Chars);
-   Generator : Random_Chars.Generator;
-
-   function Random_String (Len : Positive) return String;
-   --  Return a random string of given length.
-
    -------------------------------------------------------------------------
 
    procedure Cleanup
@@ -143,7 +134,8 @@ package body Spawn.Pool is
       for M in 1 .. Manager_Count loop
          declare
             Pid  : GNAT.Expect.Process_Descriptor;
-            File : constant String := Addr_Base & Random_String (Len => 8);
+            File : constant String := Addr_Base
+              & Utils.Random_String (Len => 8);
             Addr : constant String := "ipc://" & File;
          begin
             Args := GNAT.OS_Lib.Argument_String_To_List
@@ -185,19 +177,6 @@ package body Spawn.Pool is
          end;
       end loop;
    end Init;
-
-   -------------------------------------------------------------------------
-
-   function Random_String (Len : Positive) return String
-   is
-      Result : String (1 .. Len);
-   begin
-      for I in Result'Range loop
-         Result (I) := Random_Chars.Random (Gen => Generator);
-      end loop;
-
-      return Result;
-   end Random_String;
 
    -------------------------------------------------------------------------
 
@@ -342,6 +321,4 @@ package body Spawn.Pool is
       end Release_Socket;
    end Sockets;
 
-begin
-   Random_Chars.Reset (Gen => Generator);
 end Spawn.Pool;

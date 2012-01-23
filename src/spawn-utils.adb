@@ -29,6 +29,7 @@
 
 with Ada.Directories;
 with Ada.Environment_Variables;
+with Ada.Numerics.Discrete_Random;
 
 with GNAT.OS_Lib;
 
@@ -42,6 +43,11 @@ package body Spawn.Utils is
 
    S_IFMT   : constant := 61440; --  These bits determine the file type.
    S_IFSOCK : constant := 49152; --  File type socket.
+
+   subtype Chars is Character range 'a' .. 'z';
+   package Random_Chars is new Ada.Numerics.Discrete_Random
+     (Result_Subtype => Chars);
+   Generator : Random_Chars.Generator;
 
    -------------------------------------------------------------------------
 
@@ -64,6 +70,19 @@ package body Spawn.Utils is
                   Value => Search_Path & ":" & ENV.Value ("PATH"));
       end;
    end Expand_Search_Path;
+
+   -------------------------------------------------------------------------
+
+   function Random_String (Len : Positive) return String
+   is
+      Result : String (1 .. Len);
+   begin
+      for I in Result'Range loop
+         Result (I) := Random_Chars.Random (Gen => Generator);
+      end loop;
+
+      return Result;
+   end Random_String;
 
    -------------------------------------------------------------------------
 
@@ -105,4 +124,6 @@ package body Spawn.Utils is
       end if;
    end Wait_For_Socket;
 
+begin
+   Random_Chars.Reset (Gen => Generator);
 end Spawn.Utils;
