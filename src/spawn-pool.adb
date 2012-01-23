@@ -41,6 +41,7 @@ with ZMQ.Messages;
 
 with Spawn.Types;
 with Spawn.Logger;
+with Spawn.Utils;
 
 package body Spawn.Pool is
 
@@ -142,8 +143,8 @@ package body Spawn.Pool is
       for M in 1 .. Manager_Count loop
          declare
             Pid  : GNAT.Expect.Process_Descriptor;
-            Addr : constant String := "ipc://" & Addr_Base
-              & Random_String (Len => 8);
+            File : constant String := Addr_Base & Random_String (Len => 8);
+            Addr : constant String := "ipc://" & File;
          begin
             Args := GNAT.OS_Lib.Argument_String_To_List
               (Arg_String => Mngr_Bin & " " & Addr);
@@ -163,7 +164,10 @@ package body Spawn.Pool is
 
             GNAT.OS_Lib.Free (Args);
 
-            --  TODO: Handle case where no socket exists -> no exception raised
+            pragma Debug (L.Log ("Waiting for socket '" & File
+              & "' to become available"));
+            Utils.Wait_For_Socket (Path     => File,
+                                   Timespan => 3.0);
 
             declare
                Sock : constant Socket_Handle := new ZMQ.Sockets.Socket;
