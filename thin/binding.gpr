@@ -1,0 +1,19 @@
+project Binding is
+
+   type Bit_Type is ("32", "64");
+
+   Bit : Bit_Type := external ("BIT", "32");
+
+   for Source_Dirs use (".", Bit);
+   for Object_Dir use "../obj";
+
+   Compiler_Switches := ("-gnat05",
+                         "-fstack-check",
+                         "-gnato",
+                         "-g");
+
+   package Compiler is
+      for Default_Switches ("ada") use Compiler_Switches;
+   end Compiler;
+
+end Binding;
