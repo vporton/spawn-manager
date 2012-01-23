@@ -67,7 +67,7 @@ package body Spawn_Utils_Tests is
 
    procedure Verify_Wait_For_Socket
    is
-      T_Path : constant String := "/tmp/spawn_manager_test";
+      T_Path : constant String := "/tmp/spawntest-" & Random_String (Len => 8);
    begin
       begin
          Wait_For_Socket (Path     => "/nonexistent/nonexistent",
