@@ -7,22 +7,24 @@ COVDIR = $(OBJDIR)/cov
 
 GPR_FILE = gnat/spawn.gpr
 
+BIT = $(shell getconf LONG_BIT)
+
 all: spawn_lib spawn_manager
 
 spawn_tests:
-	@gnatmake -P$@ -p
+	@gnatmake -P$@ -p -XBIT=$(BIT)
 
 tests: spawn_tests spawn_manager
 	@$(OBJDIR)/test_runner
 
 spawn_manager:
-	@gnatmake -P$@ -p -largs --LINK=g++
+	@gnatmake -P$@ -p -XBIT=$(BIT) -largs --LINK=g++
 
 spawn_performance:
-	@gnatmake -P$@ -p
+	@gnatmake -P$@ -p -XBIT=$(BIT)
 
 spawn_lib:
-	@gnatmake -P$@ -p
+	@gnatmake -P$@ -p -XBIT=$(BIT)
 
 perf: spawn_performance spawn_manager
 	@$(OBJDIR)/perf/performance
@@ -43,7 +45,7 @@ install_manager: spawn_manager
 
 cov:
 	@rm -f $(COVDIR)/*.gcda
-	@gnatmake -Pspawn_tests.gpr -p -XBUILD="coverage"
+	@gnatmake -Pspawn_tests.gpr -p -XBUILD="coverage" -XBIT=$(BIT)
 	@$(COVDIR)/test_runner || true
 	@lcov -c -d $(COVDIR) -o $(COVDIR)/cov.info
 	@lcov -e $(COVDIR)/cov.info "$(PWD)/src/*.adb" -o $(COVDIR)/cov.info

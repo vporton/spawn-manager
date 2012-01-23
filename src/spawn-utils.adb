@@ -32,7 +32,16 @@ with Ada.Environment_Variables;
 
 with GNAT.OS_Lib;
 
+with Interfaces.C.Strings;
+
+with sys_stat_h;
+with bits_stat_h;
+with bits_types_h;
+
 package body Spawn.Utils is
+
+   S_IFMT   : constant := 61440; --  These bits determine the file type.
+   S_IFSOCK : constant := 49152; --  File type socket.
 
    -------------------------------------------------------------------------
 
@@ -55,5 +64,45 @@ package body Spawn.Utils is
                   Value => Search_Path & ":" & ENV.Value ("PATH"));
       end;
    end Expand_Search_Path;
+
+   -------------------------------------------------------------------------
+
+   procedure Wait_For_Socket
+     (Path     : String;
+      Timespan : Duration)
+   is
+      use Interfaces.C;
+
+      function Is_Socket (Mode : bits_types_h.uu_mode_t) return Boolean;
+      --  Return True if given mode designates a socket.
+
+      function Is_Socket (Mode : bits_types_h.uu_mode_t) return Boolean
+      is
+      begin
+         return (Mode and S_IFMT) = S_IFSOCK;
+      end Is_Socket;
+
+      C_Path : Strings.chars_ptr := Strings.New_String (Str => Path);
+      C_Stat : aliased bits_stat_h.stat;
+      C_Res  : int;
+   begin
+      for L in 1 .. Positive (100 * Timespan) loop
+         C_Res := sys_stat_h.stat
+           (uu_file => C_Path,
+            uu_buf  => C_Stat'Access);
+
+         exit when C_Res = 0;
+         delay Timespan / 100;
+      end loop;
+      Strings.Free (Item => C_Path);
+
+      if C_Res /= 0 then
+         raise Socket_Error with "Socket '" & Path & "' not available";
+      end if;
+
+      if not Is_Socket (Mode => C_Stat.st_mode) then
+         raise Socket_Error with "File '" & Path & "' is not a socket";
+      end if;
+   end Wait_For_Socket;
 
 end Spawn.Utils;

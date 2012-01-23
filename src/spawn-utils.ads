@@ -33,4 +33,13 @@ package Spawn.Utils is
    --  Expand the search path for binaries (i.e. PATH) with the directory of
    --  the given command.
 
+   procedure Wait_For_Socket
+     (Path     : String;
+      Timespan : Duration);
+   --  This procedure waits max. the given timespan until the socket specified
+   --  by path is available. An exception is raised if the socket is not
+   --  present after Timespan or the Path given is not a socket.
+
+   Socket_Error : exception;
+
 end Spawn.Utils;
