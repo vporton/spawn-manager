@@ -138,7 +138,7 @@ package body Spawn.Pool is
 
       Args : GNAT.OS_Lib.Argument_List_Access;
    begin
-      Ctx.Initialize (App_Threads => 1);
+      Ctx.Initialize (App_Threads => Manager_Count);
 
       for M in 1 .. Manager_Count loop
          declare
