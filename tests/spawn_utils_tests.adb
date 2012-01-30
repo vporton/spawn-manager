@@ -39,6 +39,18 @@ package body Spawn_Utils_Tests is
 
    -------------------------------------------------------------------------
 
+   procedure Get_Random_Strings
+   is
+   begin
+      Assert (Condition => Random_String (Len => 4)'Length = 4,
+              Message   => "Length incorrect");
+      Assert (Condition => Random_String (Len => 4) /=
+                Random_String (Len => 4),
+              Message   => "Strings match");
+   end Get_Random_Strings;
+
+   -------------------------------------------------------------------------
+
    procedure Initialize (T : in out Testcase)
    is
    begin
@@ -50,18 +62,6 @@ package body Spawn_Utils_Tests is
         (Routine => Get_Random_Strings'Access,
          Name    => "Get random strings");
    end Initialize;
-
-   -------------------------------------------------------------------------
-
-   procedure Get_Random_Strings
-   is
-   begin
-      Assert (Condition => Random_String (Len => 4)'Length = 4,
-              Message   => "Length incorrect");
-      Assert (Condition => Random_String (Len => 4) /=
-                Random_String (Len => 4),
-              Message   => "Strings match");
-   end Get_Random_Strings;
 
    -------------------------------------------------------------------------
 
