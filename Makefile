@@ -36,7 +36,10 @@ install_lib: spawn_lib
 	install -d $(PREFIX)/lib/spawn
 	install -d $(PREFIX)/lib/gnat
 	install -m 644 $(SRCDIR)/*.ad[bs] $(PREFIX)/include/spawn
+	install -m 644 thin/*.ads $(PREFIX)/include/spawn
+	install -m 644 thin/$(BIT)/*.ads $(PREFIX)/include/spawn
 	install -m 444 $(LIBDIR)/*.ali $(PREFIX)/lib/spawn
+	install -m 444 $(OBJDIR)/thin/*.ali $(PREFIX)/lib/spawn
 	install -m 444 $(LIBDIR)/libspawn.a $(PREFIX)/lib/spawn
 	install -m 644 $(GPR_FILE) $(PREFIX)/lib/gnat
 
