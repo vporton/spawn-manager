@@ -35,11 +35,13 @@ with GNAT.OS_Lib;
 
 with Interfaces.C.Strings;
 
-with sys_stat_h;
-with bits_stat_h;
-with bits_types_h;
+with Spawn_Thin.sys_stat_h;
+with Spawn_Thin.bits_stat_h;
+with Spawn_Thin.bits_types_h;
 
 package body Spawn.Utils is
+
+   use Spawn_Thin;
 
    S_IFMT   : constant := 61440; --  These bits determine the file type.
    S_IFSOCK : constant := 49152; --  File type socket.

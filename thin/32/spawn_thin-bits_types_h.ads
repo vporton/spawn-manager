@@ -1,8 +1,9 @@
 with Interfaces.C; use Interfaces.C;
+with Interfaces.C.Extensions;
 with System;
 with Interfaces.C.Strings;
 
-package bits_types_h is
+package Spawn_Thin.bits_types_h is
 
    subtype uu_u_char is unsigned_char;  -- /usr/include/bits/types.h:31
 
@@ -24,15 +25,15 @@ package bits_types_h is
 
    subtype uu_uint32_t is unsigned;  -- /usr/include/bits/types.h:42
 
-   subtype uu_int64_t is long;  -- /usr/include/bits/types.h:44
+   subtype uu_int64_t is Long_Long_Integer;  -- /usr/include/bits/types.h:47
 
-   subtype uu_uint64_t is unsigned_long;  -- /usr/include/bits/types.h:45
+   subtype uu_uint64_t is Extensions.unsigned_long_long;  -- /usr/include/bits/types.h:48
 
-   subtype uu_quad_t is long;  -- /usr/include/bits/types.h:53
+   subtype uu_quad_t is Long_Long_Integer;  -- /usr/include/bits/types.h:56
 
-   subtype uu_u_quad_t is unsigned_long;  -- /usr/include/bits/types.h:54
+   subtype uu_u_quad_t is Extensions.unsigned_long_long;  -- /usr/include/bits/types.h:57
 
-   subtype uu_dev_t is unsigned_long;  -- /usr/include/bits/types.h:134
+   subtype uu_dev_t is uu_u_quad_t;  -- /usr/include/bits/types.h:134
 
    subtype uu_uid_t is unsigned;  -- /usr/include/bits/types.h:135
 
@@ -40,15 +41,15 @@ package bits_types_h is
 
    subtype uu_ino_t is unsigned_long;  -- /usr/include/bits/types.h:137
 
-   subtype uu_ino64_t is unsigned_long;  -- /usr/include/bits/types.h:138
+   subtype uu_ino64_t is uu_u_quad_t;  -- /usr/include/bits/types.h:138
 
    subtype uu_mode_t is unsigned;  -- /usr/include/bits/types.h:139
 
-   subtype uu_nlink_t is unsigned_long;  -- /usr/include/bits/types.h:140
+   subtype uu_nlink_t is unsigned;  -- /usr/include/bits/types.h:140
 
    subtype uu_off_t is long;  -- /usr/include/bits/types.h:141
 
-   subtype uu_off64_t is long;  -- /usr/include/bits/types.h:142
+   subtype uu_off64_t is uu_quad_t;  -- /usr/include/bits/types.h:142
 
    subtype uu_pid_t is int;  -- /usr/include/bits/types.h:143
 
@@ -64,7 +65,7 @@ package bits_types_h is
 
    subtype uu_rlim_t is unsigned_long;  -- /usr/include/bits/types.h:146
 
-   subtype uu_rlim64_t is unsigned_long;  -- /usr/include/bits/types.h:147
+   subtype uu_rlim64_t is uu_u_quad_t;  -- /usr/include/bits/types.h:147
 
    subtype uu_id_t is unsigned;  -- /usr/include/bits/types.h:148
 
@@ -88,17 +89,17 @@ package bits_types_h is
 
    subtype uu_blkcnt_t is long;  -- /usr/include/bits/types.h:169
 
-   subtype uu_blkcnt64_t is long;  -- /usr/include/bits/types.h:170
+   subtype uu_blkcnt64_t is uu_quad_t;  -- /usr/include/bits/types.h:170
 
    subtype uu_fsblkcnt_t is unsigned_long;  -- /usr/include/bits/types.h:173
 
-   subtype uu_fsblkcnt64_t is unsigned_long;  -- /usr/include/bits/types.h:174
+   subtype uu_fsblkcnt64_t is uu_u_quad_t;  -- /usr/include/bits/types.h:174
 
    subtype uu_fsfilcnt_t is unsigned_long;  -- /usr/include/bits/types.h:177
 
-   subtype uu_fsfilcnt64_t is unsigned_long;  -- /usr/include/bits/types.h:178
+   subtype uu_fsfilcnt64_t is uu_u_quad_t;  -- /usr/include/bits/types.h:178
 
-   subtype uu_ssize_t is long;  -- /usr/include/bits/types.h:180
+   subtype uu_ssize_t is int;  -- /usr/include/bits/types.h:180
 
    subtype uu_loff_t is uu_off64_t;  -- /usr/include/bits/types.h:184
 
@@ -106,8 +107,8 @@ package bits_types_h is
 
    type uu_caddr_t is new Interfaces.C.Strings.chars_ptr;  -- /usr/include/bits/types.h:186
 
-   subtype uu_intptr_t is long;  -- /usr/include/bits/types.h:189
+   subtype uu_intptr_t is int;  -- /usr/include/bits/types.h:189
 
    subtype uu_socklen_t is unsigned;  -- /usr/include/bits/types.h:192
 
-end bits_types_h;
+end Spawn_Thin.bits_types_h;

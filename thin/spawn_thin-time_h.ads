@@ -1,7 +1,7 @@
 with Interfaces.C; use Interfaces.C;
-with bits_types_h;
+with Spawn_Thin.bits_types_h;
 
-package time_h is
+package Spawn_Thin.time_h is
 
    subtype time_t is bits_types_h.uu_time_t;  -- /usr/include/time.h:76
 
@@ -11,4 +11,4 @@ package time_h is
    end record;
    pragma Convention (C_Pass_By_Copy, timespec);  -- /usr/include/time.h:120
 
-end time_h;
+end Spawn_Thin.time_h;

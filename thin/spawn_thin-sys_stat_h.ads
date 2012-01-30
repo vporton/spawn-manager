@@ -1,10 +1,10 @@
 with Interfaces.C; use Interfaces.C;
-with bits_types_h;
+with Spawn_Thin.bits_types_h;
 with Interfaces.C.Strings;
-limited with bits_stat_h;
-limited with time_h;
+limited with Spawn_Thin.bits_stat_h;
+limited with Spawn_Thin.time_h;
 
-package sys_stat_h is
+package Spawn_Thin.sys_stat_h is
 
    --  unsupported macro: S_IFMT __S_IFMT
    --  unsupported macro: S_IFDIR __S_IFDIR
@@ -171,4 +171,4 @@ package sys_stat_h is
    function futimens (uu_fd : int; uu_times : access constant time_h.timespec) return int;  -- /usr/include/sys/stat.h:374
    pragma Import (C, futimens, "futimens");
 
-end sys_stat_h;
+end Spawn_Thin.sys_stat_h;
