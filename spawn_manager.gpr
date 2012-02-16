@@ -9,12 +9,12 @@ project Spawn_Manager is
    for Source_Dirs use Spawn_Common.Source_Dirs;
    for Object_Dir use "obj";
 
-   Compiler_Switches := ();
+   Compiler_Switches := Spawn_Common.Compiler_Switches;
 
    case Build is
       when "prod"  => null;
       when "debug" =>
-         Compiler_Switches := Spawn_Common.Compiler_Switches & "-gnata";
+         Compiler_Switches := Compiler_Switches & "-gnata";
    end case;
 
    package Compiler is
