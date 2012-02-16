@@ -55,7 +55,7 @@ begin
       Spawn.Pool.Execute (Command => Cmd);
       Runtime := Runtime + (Ada.Calendar.Clock - Start);
    end loop;
-   Ada.Text_IO.Put_Line ("* IPC 0MQ   :" & Duration'Image (Runtime / Loops));
+   Ada.Text_IO.Put_Line ("* Anet/IPC   :" & Duration'Image (Runtime / Loops));
 
    Runtime := Duration (0);
 
@@ -80,7 +80,7 @@ begin
          GNAT.OS_Lib.Free (X => Args (A));
       end loop;
    end;
-   Ada.Text_IO.Put_Line ("* GNAT Spawn:" & Duration'Image (Runtime / Loops));
+   Ada.Text_IO.Put_Line ("* GNAT Spawn :" & Duration'Image (Runtime / Loops));
 
    Spawn.Pool.Cleanup;
 end Performance;

@@ -15,14 +15,14 @@ spawn_tests:
 	@gnatmake -P$@ -p -XBIT=$(BIT)
 
 tests: spawn_tests spawn_manager_debug
-	@$(OBJDIR)/spawn_manager ipc:///tmp/spawn_manager_0 &
+	@$(OBJDIR)/spawn_manager /tmp/spawn_manager_0 &
 	@$(OBJDIR)/test_runner
 
 spawn_manager:
-	@gnatmake -P$@ -p -XBIT=$(BIT) -largs --LINK=g++
+	@gnatmake -P$@ -p -XBIT=$(BIT)
 
 spawn_manager_debug:
-	@gnatmake -Pspawn_manager -p -XBIT=$(BIT) -XBUILD="debug" -largs --LINK=g++
+	@gnatmake -Pspawn_manager -p -XBIT=$(BIT) -XBUILD="debug"
 
 spawn_performance:
 	@gnatmake -P$@ -p -XBIT=$(BIT)

@@ -30,13 +30,12 @@
 with Ada.Command_Line;
 with Ada.Strings.Unbounded;
 with Ada.Directories;
+with Ada.Streams;
 with Ada.Exceptions;
 
 with GNAT.OS_Lib;
 
-with ZMQ.Sockets;
-with ZMQ.Contexts;
-with ZMQ.Messages;
+with Anet.Sockets;
 
 with Spawn.Types;
 with Spawn.Utils;
@@ -45,7 +44,6 @@ with Spawn.Logger;
 procedure Spawn_Manager
 is
    use Ada.Strings.Unbounded;
-   use ZMQ;
 
    package L renames Spawn.Logger;
 
@@ -57,24 +55,17 @@ is
    Shell : constant String := "/bin/bash";
    --  Shell used to execute commands.
 
-   Ctx  : Contexts.Context;
-   Sock : Sockets.Socket;
+   Sock_Listen, Sock_Comm : Anet.Sockets.Socket_Type;
 
    procedure Send_Reply (Success : Boolean);
    --  Send reply message indicating success or failure.
 
    procedure Send_Reply (Success : Boolean)
    is
-      Reply  : Messages.Message;
-      Result : constant Spawn.Types.Data_Type
-        := (Success => Success,
-            others  => <>);
    begin
-      Reply.Initialize
-        (Data => Spawn.Types.Serialize (Data => Result));
-
-      Sock.Send (Msg => Reply);
-      Reply.Finalize;
+      Sock_Comm.Send (Item => Spawn.Types.Serialize
+                      (Data => (Success => Success,
+                                others  => <>)));
       pragma Debug (L.Log ("Manager - reply sent [" & Success'Img & "]"));
    end Send_Reply;
 
@@ -86,37 +77,48 @@ begin
 
    Spawn.Utils.Expand_Search_Path (Cmd_Path => Ada.Command_Line.Command_Name);
 
-   Ctx.Initialize (App_Threads => 1);
-   Sock.Initialize (With_Context => Ctx,
-                    Kind         => Sockets.REP);
-   Sock.Bind (Address => Ada.Command_Line.Argument (1));
+   Sock_Listen.Create (Family => Anet.Sockets.Family_Unix,
+                       Mode   => Anet.Sockets.Stream_Socket);
+   Sock_Listen.Bind_Unix (Path => Ada.Command_Line.Argument (1));
+   Sock_Listen.Listen_Unix;
    pragma Debug (L.Log ("Manager - listening on socket "
      & Ada.Command_Line.Argument (1)));
+
+   Sock_Listen.Accept_Unix (New_Socket => Sock_Comm);
+   pragma Debug (L.Log ("Manager - connection established"));
 
    Main :
    loop
       declare
-         Request : Messages.Message;
-         Data    : Spawn.Types.Data_Type;
-      begin
-         Request.Initialize;
-         Sock.recv (Msg   => Request,
-                    Flags => 0);
+         use type Ada.Streams.Stream_Element_Offset;
 
-         Data := Spawn.Types.Deserialize (Buffer => Request.getData);
-         Request.Finalize;
+         Buffer   : Ada.Streams.Stream_Element_Array (1 .. 1024);
+         Last_Idx : Ada.Streams.Stream_Element_Offset;
+         Req      : Spawn.Types.Data_Type;
+         Sender   : Anet.Sockets.Sender_Info_Type;
+      begin
+         pragma Debug (L.Log ("Manager - waiting for data"));
+         Sock_Comm.Receive (Src  => Sender,
+                            Item => Buffer,
+                            Last => Last_Idx);
+
+         pragma Debug (L.Log ("Manager - received" & Last_Idx'Img & " bytes"));
+         exit Main when Last_Idx = 0;
+
+         Req := Spawn.Types.Deserialize
+           (Buffer => Buffer (Buffer'First .. Last_Idx));
 
          pragma Debug (L.Log ("Manager - command request received:"));
-         pragma Debug (L.Log ("Manager - cmd  [" & S (Data.Command) & "]"));
-         pragma Debug (L.Log ("Manager - dir  [" & S (Data.Dir) & "]"));
-         pragma Debug (L.Log ("Manager - quit [" & Data.Do_Quit'Img & "]"));
+         pragma Debug (L.Log ("Manager - cmd  [" & S (Req.Command) & "]"));
+         pragma Debug (L.Log ("Manager - dir  [" & S (Req.Dir) & "]"));
+         pragma Debug (L.Log ("Manager - quit [" & Req.Do_Quit'Img & "]"));
 
          declare
             Args   : GNAT.OS_Lib.Argument_List (1 .. 4);
-            Dir    : constant String := To_String (Data.Dir);
+            Dir    : constant String := To_String (Req.Dir);
             Status : Boolean;
          begin
-            exit Main when Data.Do_Quit;
+            exit Main when Req.Do_Quit;
 
             if Dir'Length /= 0
               and then Dir /= Ada.Directories.Current_Directory
@@ -127,7 +129,7 @@ begin
             Args (1) := new String'("-o");
             Args (2) := new String'("pipefail");
             Args (3) := new String'("-c");
-            Args (4) := new String'(To_String (Data.Command));
+            Args (4) := new String'(To_String (Req.Command));
 
             GNAT.OS_Lib.Spawn
               (Program_Name => Shell,
@@ -138,7 +140,6 @@ begin
                GNAT.OS_Lib.Free (X => Args (A));
             end loop;
 
-            pragma Debug (L.Log ("Manager - sending reply"));
             Send_Reply (Success => Status);
          end;
 
@@ -151,7 +152,5 @@ begin
    end loop Main;
 
    pragma Debug (L.Log ("Manager - shutting down"));
-   Sock.Close;
-   Ctx.Finalize;
    Ada.Command_Line.Set_Exit_Status (Code => Ada.Command_Line.Success);
 end Spawn_Manager;

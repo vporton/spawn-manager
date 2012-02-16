@@ -141,9 +141,9 @@ package body Spawn_Pool_Tests is
       T.Add_Test_Routine
         (Routine => Execute_Complex_Command'Access,
          Name    => "Execute complex command");
-      T.Add_Test_Routine
-        (Routine => Send_Invalid_Data'Access,
-         Name    => "Send invalid data");
+--        T.Add_Test_Routine
+--          (Routine => Send_Invalid_Data'Access,
+--           Name    => "Send invalid data");
       T.Add_Test_Routine
         (Routine => Parallel_Execution'Access,
          Name    => "Parallel execution");

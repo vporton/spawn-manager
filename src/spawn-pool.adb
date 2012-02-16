@@ -34,17 +34,13 @@ with Ada.Unchecked_Deallocation;
 with GNAT.OS_Lib;
 with GNAT.Expect;
 
-with ZMQ.Sockets;
-with ZMQ.Contexts;
-with ZMQ.Messages;
+with Anet.Sockets;
 
 with Spawn.Types;
 with Spawn.Logger;
 with Spawn.Utils;
 
 package body Spawn.Pool is
-
-   Ctx : ZMQ.Contexts.Context;
 
    Mngr_Bin  : constant String := "spawn_manager";
    Addr_Base : constant String := "/tmp/spawn_manager-";
@@ -53,10 +49,10 @@ package body Spawn.Pool is
 
    package L renames Spawn.Logger;
 
-   type Socket_Handle is access ZMQ.Sockets.Socket;
+   type Socket_Handle is access Anet.Sockets.Socket_Type;
 
    procedure Free is new Ada.Unchecked_Deallocation
-     (Object => ZMQ.Sockets.Socket,
+     (Object => Anet.Sockets.Socket_Type,
       Name   => Socket_Handle);
    --  Free allocated socket memory.
 
@@ -129,14 +125,11 @@ package body Spawn.Pool is
 
       Args : GNAT.OS_Lib.Argument_List_Access;
    begin
-      Ctx.Initialize (App_Threads => Manager_Count);
-
       for M in 1 .. Manager_Count loop
          declare
             Pid  : GNAT.Expect.Process_Descriptor;
-            File : constant String := Addr_Base
+            Addr : constant String := Addr_Base
               & Utils.Random_String (Len => 8);
-            Addr : constant String := "ipc://" & File;
          begin
             Args := GNAT.OS_Lib.Argument_String_To_List
               (Arg_String => Mngr_Bin & " " & Addr);
@@ -156,17 +149,17 @@ package body Spawn.Pool is
 
             GNAT.OS_Lib.Free (Args);
 
-            pragma Debug (L.Log ("Waiting for socket '" & File
+            pragma Debug (L.Log ("Waiting for socket '" & Addr
               & "' to become available"));
-            Utils.Wait_For_Socket (Path     => File,
+            Utils.Wait_For_Socket (Path     => Addr,
                                    Timespan => 3.0);
 
             declare
-               Sock : constant Socket_Handle := new ZMQ.Sockets.Socket;
+               Sock : constant Socket_Handle := new Anet.Sockets.Socket_Type;
             begin
-               Sock.Initialize (With_Context => Ctx,
-                                Kind         => ZMQ.Sockets.REQ);
-               Sock.Connect (Address => Addr);
+               Sock.Create (Family => Anet.Sockets.Family_Unix,
+                            Mode   => Anet.Sockets.Stream_Socket);
+               Sock.Connect (Path => Addr);
                Sockets.Insert_Socket
                  (S => (Address   => To_Unbounded_String (Addr),
                         Pid       => Pid,
@@ -184,29 +177,27 @@ package body Spawn.Pool is
      (Request : Ada.Streams.Stream_Element_Array)
       return Ada.Streams.Stream_Element_Array
    is
-      Cont     : Socket_Container;
-      Send_Msg : ZMQ.Messages.Message;
-      Rcv_Msg  : ZMQ.Messages.Message;
+      Cont : Socket_Container;
    begin
       Sockets.Get_Socket (S => Cont);
       pragma Debug (L.Log ("Sending request using socket "
         & To_String (Cont.Address)));
 
-      Send_Msg.Initialize (Data => Request);
-      Cont.Handle.Send (Msg => Send_Msg);
-      Send_Msg.Finalize;
+      Cont.Handle.Send (Item => Request);
 
-      Rcv_Msg.Initialize;
-      Cont.Handle.recv (Msg => Rcv_Msg);
-      Sockets.Release_Socket (C => Cont);
-
+      Receive_Reponse :
       declare
-         Rcv_Data : constant Ada.Streams.Stream_Element_Array
-           := Rcv_Msg.getData;
+         Response : Ada.Streams.Stream_Element_Array (1 .. 4);
+         Last_Idx : Ada.Streams.Stream_Element_Offset;
+         Sender   : Anet.Sockets.Sender_Info_Type;
       begin
-         Rcv_Msg.Finalize;
-         return Rcv_Data;
-      end;
+         Cont.Handle.Receive (Src  => Sender,
+                              Item => Response,
+                              Last => Last_Idx);
+         Sockets.Release_Socket (C => Cont);
+
+         return Response (Response'First .. Last_Idx);
+      end Receive_Reponse;
    end Send_Receive;
 
    -------------------------------------------------------------------------
@@ -221,24 +212,13 @@ package body Spawn.Pool is
          Pos : SOMP.Cursor := Data.First;
       begin
          while SOMP.Has_Element (Position => Pos) loop
-            declare
-               Req : ZMQ.Messages.Message;
-            begin
-               Req.Initialize (Data => Types.Serialize
-                               (Data => Types.Shutdown_Token));
-
-               E := SOMP.Element (Position => Pos);
-
-               E.Handle.Send (Msg => Req);
-               Req.Finalize;
-               E.Handle.Close;
-               Free (X => E.Handle);
-
-               SOMP.Next (Position => Pos);
-            end;
+            E := SOMP.Element (Position => Pos);
+            E.Handle.Send (Item => Types.Serialize
+                           (Data => Types.Shutdown_Token));
+            Free (X => E.Handle);
+            SOMP.Next (Position => Pos);
          end loop;
 
-         Ctx.Finalize;
          Data.Clear;
       end Cleanup;
 
@@ -296,8 +276,6 @@ package body Spawn.Pool is
 
       procedure Release_Socket (C : Socket_Container)
       is
-         use type ZMQ.Sockets.Socket_Type;
-
          procedure Set_Available
            (Key     :        Unbounded_String;
             Element : in out Socket_Container);

@@ -27,11 +27,10 @@
 --  executable file might be covered by the GNU Public License.
 --
 
+with Ada.Streams;
 with Ada.Strings.Unbounded;
 
-with ZMQ.Contexts;
-with ZMQ.Sockets;
-with ZMQ.Messages;
+with Anet.Sockets;
 
 with Spawn.Types;
 
@@ -56,41 +55,57 @@ package body Spawn_Manager_Tests is
 
    procedure Send_Receive
    is
-      Ctx     : ZMQ.Contexts.Context;
-      S       : ZMQ.Sockets.Socket;
-      Req_Msg : ZMQ.Messages.Message;
-      Rcv_Msg : ZMQ.Messages.Message;
-      Req     : constant Types.Data_Type
+      use Ada.Streams;
+
+      S   : Anet.Sockets.Socket_Type;
+      Req : constant Types.Data_Type
         := (Command => To_Unbounded_String ("/bin/true"),
             others  => <>);
+
+      Invalid : constant Stream_Element_Array (1 .. 1) := (others => 12);
    begin
-      Ctx.Initialize (App_Threads => 1);
-      S.Initialize (With_Context => Ctx,
-                    Kind         => ZMQ.Sockets.REQ);
-      S.Connect (Address => "ipc:///tmp/spawn_manager_0");
+      S.Create (Family => Anet.Sockets.Family_Unix,
+                Mode   => Anet.Sockets.Stream_Socket);
+      S.Connect (Path => "/tmp/spawn_manager_0");
 
-      Req_Msg.Initialize (Data => Types.Serialize (Data => Req));
-      S.Send (Msg => Req_Msg);
-      Req_Msg.Finalize;
-
-      Rcv_Msg.Initialize;
-      S.recv (Msg => Rcv_Msg);
-
+      S.Send (Item => Types.Serialize (Data => Req));
       declare
-         Rcv : constant Types.Data_Type := Types.Deserialize
-           (Buffer => Rcv_Msg.getData);
+         Data     : Stream_Element_Array (1 .. 128);
+         Last_Idx : Stream_Element_Offset;
+         Sender   : Anet.Sockets.Sender_Info_Type;
+         Response : Types.Data_Type;
       begin
-         Rcv_Msg.Finalize;
-         Assert (Condition => Rcv.Success,
+         S.Receive (Src  => Sender,
+                    Item => Data,
+                    Last => Last_Idx);
+
+         Response := Types.Deserialize
+           (Buffer => Data (Data'First .. Last_Idx));
+         Assert (Condition => Response.Success,
                  Message   => "Cmd not successful");
+      end;
+
+      S.Send (Item => Invalid);
+      declare
+         Data     : Stream_Element_Array (1 .. 128);
+         Last_Idx : Stream_Element_Offset;
+         Sender   : Anet.Sockets.Sender_Info_Type;
+         Response : Types.Data_Type;
+      begin
+         S.Receive (Src  => Sender,
+                    Item => Data,
+                    Last => Last_Idx);
+
+         Response := Types.Deserialize
+           (Buffer => Data (Data'First .. Last_Idx));
+         Assert (Condition => not Response.Success,
+                 Message   => "Failure expected");
       end;
 
       --  Shutdown the manager
 
-      Req_Msg.Initialize (Data => Types.Serialize
-                          (Data => Types.Shutdown_Token));
-      S.Send (Msg => Req_Msg);
-      Req_Msg.Finalize;
+      S.Send (Item => Types.Serialize
+              (Data => Types.Shutdown_Token));
    end Send_Receive;
 
 end Spawn_Manager_Tests;
