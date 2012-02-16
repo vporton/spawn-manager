@@ -14,11 +14,15 @@ all: spawn_lib spawn_manager
 spawn_tests:
 	@gnatmake -P$@ -p -XBIT=$(BIT)
 
-tests: spawn_tests spawn_manager
+tests: spawn_tests spawn_manager_debug
+	@$(OBJDIR)/spawn_manager ipc:///tmp/spawn_manager_0 &
 	@$(OBJDIR)/test_runner
 
 spawn_manager:
 	@gnatmake -P$@ -p -XBIT=$(BIT) -largs --LINK=g++
+
+spawn_manager_debug:
+	@gnatmake -Pspawn_manager -p -XBIT=$(BIT) -XBUILD="debug" -largs --LINK=g++
 
 spawn_performance:
 	@gnatmake -P$@ -p -XBIT=$(BIT)
@@ -59,4 +63,4 @@ clean:
 	@rm -rf $(LIBDIR)
 
 PHONY: clean cov build install install_lib install_manager perf spawn_lib \
-	spawn_performance spawn_manager spawn_tests tests
+	spawn_performance spawn_manager spawn_manager_debug spawn_tests tests

@@ -27,42 +27,16 @@
 --  executable file might be covered by the GNU Public License.
 --
 
-with Ahven.Text_Runner;
 with Ahven.Framework;
 
-with Spawn.Pool;
-with Spawn.Utils;
+package Spawn_Manager_Tests is
 
-with Spawn_Pool_Tests;
-with Spawn_Types_Tests;
-with Spawn_Utils_Tests;
-with Spawn_Manager_Tests;
+   type Testcase is new Ahven.Framework.Test_Case with null record;
 
-procedure Test_Runner is
-   use Ahven.Framework;
+   procedure Initialize (T : in out Testcase);
+   --  Initialize testcase.
 
-   S : constant Test_Suite_Access
-     := Create_Suite (Suite_Name => "0MQ/Spawn tests");
-begin
-   Spawn.Utils.Expand_Search_Path (Cmd_Path => "obj/spawn_manager");
-   Spawn.Pool.Init (Manager_Count => 4);
+   procedure Send_Receive;
+   --  Send/receive data to/from spawn_manager.
 
-   Add_Test (Suite => S.all,
-             T     => new Spawn_Pool_Tests.Testcase);
-   Add_Test (Suite => S.all,
-             T     => new Spawn_Types_Tests.Testcase);
-   Add_Test (Suite => S.all,
-             T     => new Spawn_Utils_Tests.Testcase);
-   Add_Test (Suite => S.all,
-             T     => new Spawn_Manager_Tests.Testcase);
-
-   Ahven.Text_Runner.Run (Suite => S);
-   Release_Suite (T => S);
-
-   Spawn.Pool.Cleanup;
-
-exception
-   when others =>
-      Spawn.Pool.Cleanup;
-      raise;
-end Test_Runner;
+end Spawn_Manager_Tests;

@@ -2,11 +2,20 @@ with "spawn_common";
 
 project Spawn_Manager is
 
+   type Build_Type is ("prod", "debug");
+   Build : Build_Type := external ("BUILD", "prod");
+
    for Main use ("spawn_manager");
    for Source_Dirs use Spawn_Common.Source_Dirs;
    for Object_Dir use "obj";
 
-   Compiler_Switches := Spawn_Common.Compiler_Switches & "-gnata";
+   Compiler_Switches := ();
+
+   case Build is
+      when "prod"  => null;
+      when "debug" =>
+         Compiler_Switches := Spawn_Common.Compiler_Switches & "-gnata";
+   end case;
 
    package Compiler is
       for Default_Switches ("ada") use Compiler_Switches;
