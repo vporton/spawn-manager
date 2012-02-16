@@ -48,9 +48,6 @@ package Spawn_Pool_Tests is
    procedure Execute_Complex_Command;
    --  Execute complex command.
 
-   procedure Send_Invalid_Data;
-   --  Send invalid data to manager.
-
    procedure Parallel_Execution;
    --  Verify parallel command execution.
 
