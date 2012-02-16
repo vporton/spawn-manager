@@ -213,8 +213,7 @@ package body Spawn.Pool is
       begin
          while SOMP.Has_Element (Position => Pos) loop
             E := SOMP.Element (Position => Pos);
-            E.Handle.Send (Item => Types.Serialize
-                           (Data => Types.Shutdown_Token));
+            E.Handle.Close;
             Free (X => E.Handle);
             SOMP.Next (Position => Pos);
          end loop;

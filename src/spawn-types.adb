@@ -43,10 +43,9 @@ package body Spawn.Types is
    is
       Result : Data_Type;
    begin
-      Result.Success := Buffer (Buffer'First)     = 1;
-      Result.Do_Quit := Buffer (Buffer'First + 1) = 1;
+      Result.Success := Boolean'Val (Buffer (Buffer'First));
 
-      if Buffer'Length = 2 then
+      if Buffer'Length = 1 then
          return Result;
       end if;
 
@@ -54,7 +53,7 @@ package body Spawn.Types is
          Temp : Unbounded_String;
          Char : Character;
       begin
-         for C in reverse Buffer'First + 2 .. Buffer'Last loop
+         for C in reverse Buffer'First + 1 .. Buffer'Last loop
             Char := Character'Val (Buffer (C));
 
             if Char = ASCII.SOH then
@@ -85,7 +84,7 @@ package body Spawn.Types is
         (Length (Data.Command));
       Dir_Len   : constant Stream_Element_Offset := Stream_Element_Offset
         (Length (Data.Dir));
-      Total_Len : Stream_Element_Offset          := 2;
+      Total_Len : Stream_Element_Offset          := 1;
    begin
       if Cmd_Len /= 0 then
          Total_Len := Total_Len + Cmd_Len + 1;
@@ -100,16 +99,15 @@ package body Spawn.Types is
          Idx    : Stream_Element_Offset;
       begin
          Result (1) := Boolean'Pos (Data.Success);
-         Result (2) := Boolean'Pos (Data.Do_Quit);
 
-         if Total_Len = 2 then
+         if Total_Len = 1 then
             return Result;
          end if;
 
          --  SOH/1 : Command
          --  STX/2 : Directory
 
-         Idx := 3;
+         Idx := 2;
 
          if Cmd_Len /= 0 then
             Result (Idx .. Idx + Cmd_Len) := To_Stream

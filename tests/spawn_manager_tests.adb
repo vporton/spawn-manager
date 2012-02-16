@@ -102,10 +102,7 @@ package body Spawn_Manager_Tests is
                  Message   => "Failure expected");
       end;
 
-      --  Shutdown the manager
-
-      S.Send (Item => Types.Serialize
-              (Data => Types.Shutdown_Token));
+      S.Close;
    end Send_Receive;
 
 end Spawn_Manager_Tests;

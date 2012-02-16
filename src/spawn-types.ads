@@ -34,12 +34,9 @@ package Spawn.Types is
 
    type Data_Type is record
       Success : Boolean := False;
-      Do_Quit : Boolean := False;
       Command : Ada.Strings.Unbounded.Unbounded_String;
       Dir     : Ada.Strings.Unbounded.Unbounded_String;
    end record;
-
-   Shutdown_Token : constant Data_Type;
 
    function Serialize
      (Data : Data_Type)
@@ -52,10 +49,5 @@ package Spawn.Types is
    --  Deserialize given data type.
 
    Deserialize_Error : exception;
-
-private
-
-   Shutdown_Token : constant Data_Type := (Do_Quit => True,
-                                           others  => <>);
 
 end Spawn.Types;

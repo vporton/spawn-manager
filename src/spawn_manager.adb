@@ -112,15 +112,12 @@ begin
          pragma Debug (L.Log ("Manager - command request received:"));
          pragma Debug (L.Log ("Manager - cmd  [" & S (Req.Command) & "]"));
          pragma Debug (L.Log ("Manager - dir  [" & S (Req.Dir) & "]"));
-         pragma Debug (L.Log ("Manager - quit [" & Req.Do_Quit'Img & "]"));
 
          declare
             Args   : GNAT.OS_Lib.Argument_List (1 .. 4);
             Dir    : constant String := To_String (Req.Dir);
             Status : Boolean;
          begin
-            exit Main when Req.Do_Quit;
-
             if Dir'Length /= 0
               and then Dir /= Ada.Directories.Current_Directory
             then
