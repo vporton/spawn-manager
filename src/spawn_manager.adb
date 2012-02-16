@@ -30,6 +30,7 @@
 with Ada.Command_Line;
 with Ada.Strings.Unbounded;
 with Ada.Directories;
+with Ada.Exceptions;
 
 with GNAT.OS_Lib;
 
@@ -39,17 +40,25 @@ with ZMQ.Messages;
 
 with Spawn.Types;
 with Spawn.Utils;
+with Spawn.Logger;
 
 procedure Spawn_Manager
 is
-   Shell : constant String := "/bin/bash";
-   --  Shell used to execute commands.
-
    use Ada.Strings.Unbounded;
    use ZMQ;
 
-   Ctx : Contexts.Context;
-   S   : Sockets.Socket;
+   package L renames Spawn.Logger;
+
+   function S
+     (Source : Unbounded_String)
+      return String
+      renames Ada.Strings.Unbounded.To_String;
+
+   Shell : constant String := "/bin/bash";
+   --  Shell used to execute commands.
+
+   Ctx  : Contexts.Context;
+   Sock : Sockets.Socket;
 
    procedure Send_Reply (Success : Boolean);
    --  Send reply message indicating success or failure.
@@ -64,8 +73,9 @@ is
       Reply.Initialize
         (Data => Spawn.Types.Serialize (Data => Result));
 
-      S.Send (Msg => Reply);
+      Sock.Send (Msg => Reply);
       Reply.Finalize;
+      pragma Debug (L.Log ("Manager - reply sent [" & Success'Img & "]"));
    end Send_Reply;
 
 begin
@@ -77,9 +87,11 @@ begin
    Spawn.Utils.Expand_Search_Path (Cmd_Path => Ada.Command_Line.Command_Name);
 
    Ctx.Initialize (App_Threads => 1);
-   S.Initialize (With_Context => Ctx,
-                 Kind         => Sockets.REP);
-   S.Bind (Address => Ada.Command_Line.Argument (1));
+   Sock.Initialize (With_Context => Ctx,
+                    Kind         => Sockets.REP);
+   Sock.Bind (Address => Ada.Command_Line.Argument (1));
+   pragma Debug (L.Log ("Manager - listening on socket "
+     & Ada.Command_Line.Argument (1)));
 
    Main :
    loop
@@ -88,11 +100,16 @@ begin
          Data    : Spawn.Types.Data_Type;
       begin
          Request.Initialize;
-         S.recv (Msg   => Request,
-                 Flags => 0);
+         Sock.recv (Msg   => Request,
+                    Flags => 0);
 
          Data := Spawn.Types.Deserialize (Buffer => Request.getData);
          Request.Finalize;
+
+         pragma Debug (L.Log ("Manager - command request received:"));
+         pragma Debug (L.Log ("Manager - cmd  [" & S (Data.Command) & "]"));
+         pragma Debug (L.Log ("Manager - dir  [" & S (Data.Dir) & "]"));
+         pragma Debug (L.Log ("Manager - quit [" & Data.Do_Quit'Img & "]"));
 
          declare
             Args   : GNAT.OS_Lib.Argument_List (1 .. 4);
@@ -121,15 +138,20 @@ begin
                GNAT.OS_Lib.Free (X => Args (A));
             end loop;
 
+            pragma Debug (L.Log ("Manager - sending reply"));
             Send_Reply (Success => Status);
          end;
 
       exception
-         when others => Send_Reply (Success => False);
+         when E : others =>
+            pragma Debug (L.Log ("Manager - exception:"));
+            pragma Debug (L.Log (Ada.Exceptions.Exception_Information (E)));
+            Send_Reply (Success => False);
       end;
    end loop Main;
 
-   S.Close;
+   pragma Debug (L.Log ("Manager - shutting down"));
+   Sock.Close;
    Ctx.Finalize;
    Ada.Command_Line.Set_Exit_Status (Code => Ada.Command_Line.Success);
 end Spawn_Manager;
