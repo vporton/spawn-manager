@@ -101,7 +101,9 @@ begin
          begin
             exit Main when Data.Do_Quit;
 
-            if Dir /= Ada.Directories.Current_Directory then
+            if Dir'Length /= 0
+              and then Dir /= Ada.Directories.Current_Directory
+            then
                Ada.Directories.Set_Directory (Directory => Dir);
             end if;
 
