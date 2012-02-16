@@ -1,5 +1,4 @@
 with "anet";
-with "thin/binding";
 
 project Spawn_Common is
 

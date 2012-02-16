@@ -41,7 +41,7 @@ package Spawn.Utils is
       Timespan : Duration);
    --  This procedure waits max. the given timespan until the socket specified
    --  by path is available. An exception is raised if the socket is not
-   --  present after Timespan or the Path given is not a socket.
+   --  present after the timespan has passed.
 
    Socket_Error : exception;
 

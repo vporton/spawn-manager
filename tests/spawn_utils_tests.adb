@@ -27,9 +27,6 @@
 --  executable file might be covered by the GNU Public License.
 --
 
-with Ada.Directories;
-with Ada.Exceptions;
-
 with Spawn.Utils;
 
 package body Spawn_Utils_Tests is
@@ -67,7 +64,6 @@ package body Spawn_Utils_Tests is
 
    procedure Verify_Wait_For_Socket
    is
-      T_Path : constant String := "/tmp/spawntest-" & Random_String (Len => 8);
    begin
       begin
          Wait_For_Socket (Path     => "/nonexistent/nonexistent",
@@ -77,22 +73,6 @@ package body Spawn_Utils_Tests is
       exception
          when Socket_Error => null;
       end;
-
-      begin
-         Ada.Directories.Create_Path (New_Directory => T_Path);
-         Wait_For_Socket (Path     => T_Path,
-                          Timespan => 0.1);
-         Fail (Message => "Exception expected");
-
-      exception
-         when E : Socket_Error =>
-            Assert (Condition => Ada.Exceptions.Exception_Message
-                    (X => E) = "File '" & T_Path & "' is not a socket",
-                    Message   => "Invalid exception message: "
-                    & Ada.Exceptions.Exception_Message (X => E));
-      end;
-
-      Ada.Directories.Delete_Directory (Directory => T_Path);
    end Verify_Wait_For_Socket;
 
 end Spawn_Utils_Tests;

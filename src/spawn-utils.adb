@@ -33,18 +33,7 @@ with Ada.Numerics.Discrete_Random;
 
 with GNAT.OS_Lib;
 
-with Interfaces.C.Strings;
-
-with Spawn_Thin.sys_stat_h;
-with Spawn_Thin.bits_stat_h;
-with Spawn_Thin.bits_types_h;
-
 package body Spawn.Utils is
-
-   use Spawn_Thin;
-
-   S_IFMT   : constant := 61440; --  These bits determine the file type.
-   S_IFSOCK : constant := 49152; --  File type socket.
 
    subtype Chars is Character range 'a' .. 'z';
    package Random_Chars is new Ada.Numerics.Discrete_Random
@@ -92,38 +81,15 @@ package body Spawn.Utils is
      (Path     : String;
       Timespan : Duration)
    is
-      use Interfaces.C;
-
-      function Is_Socket (Mode : bits_types_h.uu_mode_t) return Boolean;
-      --  Return True if given mode designates a socket.
-
-      function Is_Socket (Mode : bits_types_h.uu_mode_t) return Boolean
-      is
-      begin
-         return (Mode and S_IFMT) = S_IFSOCK;
-      end Is_Socket;
-
-      C_Path : Strings.chars_ptr := Strings.New_String (Str => Path);
-      C_Stat : aliased bits_stat_h.stat;
-      C_Res  : int;
    begin
       for L in 1 .. Positive (100 * Timespan) loop
-         C_Res := sys_stat_h.stat
-           (uu_file => C_Path,
-            uu_buf  => C_Stat'Access);
-
-         exit when C_Res = 0;
+         if Ada.Directories.Exists (Name => Path) then
+            return;
+         end if;
          delay Timespan / 100;
       end loop;
-      Strings.Free (Item => C_Path);
 
-      if C_Res /= 0 then
-         raise Socket_Error with "Socket '" & Path & "' not available";
-      end if;
-
-      if not Is_Socket (Mode => C_Stat.st_mode) then
-         raise Socket_Error with "File '" & Path & "' is not a socket";
-      end if;
+      raise Socket_Error with "Socket '" & Path & "' not available";
    end Wait_For_Socket;
 
 begin

@@ -7,28 +7,26 @@ COVDIR = $(OBJDIR)/cov
 
 GPR_FILE = gnat/spawn.gpr
 
-BIT = $(shell getconf LONG_BIT)
-
 all: spawn_lib spawn_manager
 
 spawn_tests:
-	@gnatmake -P$@ -p -XBIT=$(BIT)
+	@gnatmake -P$@ -p
 
 tests: spawn_tests spawn_manager_debug
 	@$(OBJDIR)/spawn_manager /tmp/spawn_manager_0 &
 	@$(OBJDIR)/test_runner
 
 spawn_manager:
-	@gnatmake -P$@ -p -XBIT=$(BIT)
+	@gnatmake -P$@ -p
 
 spawn_manager_debug:
-	@gnatmake -Pspawn_manager -p -XBIT=$(BIT) -XBUILD="debug"
+	@gnatmake -Pspawn_manager -p -XBUILD="debug"
 
 spawn_performance:
-	@gnatmake -P$@ -p -XBIT=$(BIT)
+	@gnatmake -P$@ -p
 
 spawn_lib:
-	@gnatmake -P$@ -p -XBIT=$(BIT)
+	@gnatmake -P$@ -p
 
 perf: spawn_performance spawn_manager
 	@$(OBJDIR)/perf/performance
@@ -40,10 +38,7 @@ install_lib: spawn_lib
 	install -d $(PREFIX)/lib/spawn
 	install -d $(PREFIX)/lib/gnat
 	install -m 644 $(SRCDIR)/*.ad[bs] $(PREFIX)/include/spawn
-	install -m 644 thin/*.ads $(PREFIX)/include/spawn
-	install -m 644 thin/$(BIT)/*.ads $(PREFIX)/include/spawn
 	install -m 444 $(LIBDIR)/*.ali $(PREFIX)/lib/spawn
-	install -m 444 $(OBJDIR)/thin/*.ali $(PREFIX)/lib/spawn
 	install -m 444 $(LIBDIR)/libspawn.a $(PREFIX)/lib/spawn
 	install -m 644 $(GPR_FILE) $(PREFIX)/lib/gnat
 
