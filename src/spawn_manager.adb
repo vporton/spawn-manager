@@ -35,6 +35,7 @@ with Ada.Exceptions;
 
 with GNAT.OS_Lib;
 
+with Anet.OS;
 with Anet.Sockets;
 
 with Spawn.Types;
@@ -152,5 +153,6 @@ begin
    end loop Main;
 
    pragma Debug (L.Log ("Manager - shutting down"));
+   Anet.OS.Delete_File (Filename => Ada.Command_Line.Argument (1));
    Ada.Command_Line.Set_Exit_Status (Code => Ada.Command_Line.Success);
 end Spawn_Manager;
