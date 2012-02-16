@@ -51,6 +51,8 @@ package Spawn.Types is
       return Data_Type;
    --  Deserialize given data type.
 
+   Deserialize_Error : exception;
+
 private
 
    Shutdown_Token : constant Data_Type := (Do_Quit => True,

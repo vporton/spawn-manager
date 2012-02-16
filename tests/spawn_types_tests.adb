@@ -43,13 +43,16 @@ package body Spawn_Types_Tests is
 
    procedure Deserialize_Data
    is
-      Stream0 : constant Stream_Element_Array := (1, 0);
+      Stream0 : constant Stream_Element_Array
+        := (1, 0);
       Stream1 : constant Stream_Element_Array
         := (1, 1, 1, 115, 116, 117, 2, 118, 119, 120);
       Stream2 : constant Stream_Element_Array
         := (0, 1, 2, 118, 119, 120);
       Stream3 : constant Stream_Element_Array
         := (0, 0, 1, 118, 119, 120, 97);
+      Stream4 : constant Stream_Element_Array (1 .. 1)
+        := (1 => 0);
       Data0   : constant Data_Type := Deserialize (Buffer => Stream0);
       Data1   : constant Data_Type := Deserialize (Buffer => Stream1);
       Data2   : constant Data_Type := Deserialize (Buffer => Stream2);
@@ -94,6 +97,18 @@ package body Spawn_Types_Tests is
               & To_String (Data3.Command));
       Assert (Condition => Data3.Dir = Null_Unbounded_String,
               Message   => "Directory field not null");
+
+      begin
+         declare
+            Data4 : constant Data_Type := Deserialize (Buffer => Stream4);
+            pragma Unreferenced (Data4);
+         begin
+            Fail (Message => "Exception expected");
+         end;
+
+      exception
+         when Deserialize_Error => null;
+      end;
    end Deserialize_Data;
 
    -------------------------------------------------------------------------

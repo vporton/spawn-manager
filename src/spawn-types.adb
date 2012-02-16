@@ -69,6 +69,10 @@ package body Spawn.Types is
          end loop;
       end;
       return Result;
+
+   exception
+      when Constraint_Error =>
+         raise Deserialize_Error with "Unable to deserialize data";
    end Deserialize;
 
    -------------------------------------------------------------------------
