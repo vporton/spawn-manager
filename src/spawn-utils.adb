@@ -35,9 +35,12 @@ with GNAT.OS_Lib;
 
 package body Spawn.Utils is
 
-   subtype Chars is Character range 'a' .. 'z';
+   Chars : constant String := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+     & "abcdefghijklmnopqrstuvwxyz" & "0123456789";
+   type Chars_Range is range Chars'First .. Chars'Last;
+
    package Random_Chars is new Ada.Numerics.Discrete_Random
-     (Result_Subtype => Chars);
+     (Result_Subtype => Chars_Range);
    Generator : Random_Chars.Generator;
 
    -------------------------------------------------------------------------
@@ -69,7 +72,8 @@ package body Spawn.Utils is
       Result : String (1 .. Len);
    begin
       for I in Result'Range loop
-         Result (I) := Random_Chars.Random (Gen => Generator);
+         Result (I) := Chars (Integer (Random_Chars.Random
+           (Gen => Generator)));
       end loop;
 
       return Result;
