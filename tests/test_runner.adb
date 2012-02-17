@@ -42,7 +42,7 @@ procedure Test_Runner is
    use Ahven.Framework;
 
    S : constant Test_Suite_Access
-     := Create_Suite (Suite_Name => "0MQ/Spawn tests");
+     := Create_Suite (Suite_Name => "IPC/Spawn tests");
 begin
    Spawn.Utils.Expand_Search_Path (Cmd_Path => "obj/spawn_manager");
    Spawn.Pool.Init (Manager_Count => 4);
