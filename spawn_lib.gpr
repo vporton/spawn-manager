@@ -13,7 +13,7 @@ project Spawn_Lib is
    end Compiler;
 
    package Binder is
-      for Default_Switches ("ada") use ("-E");
+      for Default_Switches ("ada") use Spawn_Common.Binder_Switches;
    end Binder;
 
 end Spawn_Lib;

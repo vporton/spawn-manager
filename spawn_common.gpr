@@ -13,4 +13,7 @@ project Spawn_Common is
                          "-fstack-check",
                          "-gnato",
                          "-g");
+
+   Binder_Switches   := ("-E");
+
 end Spawn_Common;

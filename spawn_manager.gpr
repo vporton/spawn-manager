@@ -22,7 +22,8 @@ project Spawn_Manager is
    end Compiler;
 
    package Binder is
-      for Default_Switches ("ada") use ("-static");
+      for Default_Switches ("ada") use Spawn_Common.Binder_Switches
+        & "-static";
    end Binder;
 
 end Spawn_Manager;

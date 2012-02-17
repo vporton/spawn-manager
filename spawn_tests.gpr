@@ -32,4 +32,8 @@ project Spawn_Tests is
       for Default_Switches ("ada") use Linker_Switches;
    end Linker;
 
+   package Binder is
+      for Default_Switches ("ada") use Spawn_Common.Binder_Switches;
+   end Binder;
+
 end Spawn_Tests;
