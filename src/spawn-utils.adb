@@ -37,7 +37,7 @@ package body Spawn.Utils is
 
    Chars : constant String := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
      & "abcdefghijklmnopqrstuvwxyz" & "0123456789";
-   type Chars_Range is range Chars'First .. Chars'Last;
+   subtype Chars_Range is Positive range Chars'First .. Chars'Last;
 
    package Random_Chars is new Ada.Numerics.Discrete_Random
      (Result_Subtype => Chars_Range);
@@ -72,8 +72,7 @@ package body Spawn.Utils is
       Result : String (1 .. Len);
    begin
       for I in Result'Range loop
-         Result (I) := Chars (Integer (Random_Chars.Random
-           (Gen => Generator)));
+         Result (I) := Chars (Random_Chars.Random (Gen => Generator));
       end loop;
 
       return Result;
