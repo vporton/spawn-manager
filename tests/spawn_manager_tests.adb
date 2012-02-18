@@ -72,7 +72,7 @@ package body Spawn_Manager_Tests is
       declare
          Data     : Stream_Element_Array (1 .. 128);
          Last_Idx : Stream_Element_Offset;
-         Sender   : Anet.Sockets.Sender_Info_Type;
+         Sender   : Anet.Sockets.Socket_Addr_Type;
          Response : Types.Data_Type;
       begin
          S.Receive (Src  => Sender,
@@ -89,7 +89,7 @@ package body Spawn_Manager_Tests is
       declare
          Data     : Stream_Element_Array (1 .. 128);
          Last_Idx : Stream_Element_Offset;
-         Sender   : Anet.Sockets.Sender_Info_Type;
+         Sender   : Anet.Sockets.Socket_Addr_Type;
          Response : Types.Data_Type;
       begin
          S.Receive (Src  => Sender,

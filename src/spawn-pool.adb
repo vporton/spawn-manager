@@ -189,7 +189,7 @@ package body Spawn.Pool is
       declare
          Response : Ada.Streams.Stream_Element_Array (1 .. 4);
          Last_Idx : Ada.Streams.Stream_Element_Offset;
-         Sender   : Anet.Sockets.Sender_Info_Type;
+         Sender   : Anet.Sockets.Socket_Addr_Type;
       begin
          Cont.Handle.Receive (Src  => Sender,
                               Item => Response,

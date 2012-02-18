@@ -96,7 +96,7 @@ begin
          Buffer   : Ada.Streams.Stream_Element_Array (1 .. 1024);
          Last_Idx : Ada.Streams.Stream_Element_Offset;
          Req      : Spawn.Types.Data_Type;
-         Sender   : Anet.Sockets.Sender_Info_Type;
+         Sender   : Anet.Sockets.Socket_Addr_Type;
       begin
          pragma Debug (L.Log ("Manager - waiting for data"));
          Sock_Comm.Receive (Src  => Sender,
