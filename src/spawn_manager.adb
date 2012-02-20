@@ -93,7 +93,7 @@ begin
       declare
          use type Ada.Streams.Stream_Element_Offset;
 
-         Buffer   : Ada.Streams.Stream_Element_Array (1 .. 1024);
+         Buffer   : Ada.Streams.Stream_Element_Array (1 .. 8192);
          Last_Idx : Ada.Streams.Stream_Element_Offset;
          Req      : Spawn.Types.Data_Type;
          Sender   : Anet.Sockets.Socket_Addr_Type;
