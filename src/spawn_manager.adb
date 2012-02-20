@@ -76,12 +76,20 @@ begin
       return;
    end if;
 
+   if not Anet.Sockets.Is_Valid_Unix
+     (Path => Ada.Command_Line.Argument (1))
+   then
+      Ada.Command_Line.Set_Exit_Status (Code => Ada.Command_Line.Failure);
+      return;
+   end if;
+
    Spawn.Utils.Expand_Search_Path (Cmd_Path => Ada.Command_Line.Command_Name);
    Spawn.Utils.Clear_Signal_Mask;
 
    Sock_Listen.Create (Family => Anet.Sockets.Family_Unix,
                        Mode   => Anet.Sockets.Stream_Socket);
-   Sock_Listen.Bind_Unix (Path => Ada.Command_Line.Argument (1));
+   Sock_Listen.Bind_Unix
+     (Path => Anet.Sockets.Unix_Path_Type (Ada.Command_Line.Argument (1)));
    Sock_Listen.Listen_Unix;
    pragma Debug (L.Log ("Manager - listening on socket "
      & Ada.Command_Line.Argument (1)));

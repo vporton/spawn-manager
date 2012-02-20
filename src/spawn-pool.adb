@@ -159,7 +159,7 @@ package body Spawn.Pool is
             begin
                Sock.Create (Family => Anet.Sockets.Family_Unix,
                             Mode   => Anet.Sockets.Stream_Socket);
-               Sock.Connect (Path => Addr);
+               Sock.Connect (Path => Anet.Sockets.Unix_Path_Type (Addr));
                Sockets.Insert_Socket
                  (S => (Address   => To_Unbounded_String (Addr),
                         Pid       => Pid,
