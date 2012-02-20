@@ -1,3 +1,5 @@
+with "anet";
+
 project Spawn is
    for Source_Dirs use ("../../include/spawn");
    for Library_Name use "spawn";
