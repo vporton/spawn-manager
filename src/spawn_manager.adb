@@ -85,7 +85,7 @@ begin
    pragma Debug (L.Log ("Manager - listening on socket "
      & Ada.Command_Line.Argument (1)));
 
-   Sock_Listen.Accept_Unix (New_Socket => Sock_Comm);
+   Sock_Listen.Accept_Socket (New_Socket => Sock_Comm);
    pragma Debug (L.Log ("Manager - connection established"));
 
    Main :
