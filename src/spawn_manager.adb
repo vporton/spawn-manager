@@ -77,6 +77,7 @@ begin
    end if;
 
    Spawn.Utils.Expand_Search_Path (Cmd_Path => Ada.Command_Line.Command_Name);
+   Spawn.Utils.Clear_Signal_Mask;
 
    Sock_Listen.Create (Family => Anet.Sockets.Family_Unix,
                        Mode   => Anet.Sockets.Stream_Socket);

@@ -31,6 +31,12 @@ with Ada.Directories;
 with Ada.Environment_Variables;
 with Ada.Numerics.Discrete_Random;
 
+pragma Warnings (Off);
+with System.OS_Interface;
+pragma Warnings (On);
+
+with Interfaces.C;
+
 with GNAT.OS_Lib;
 
 package body Spawn.Utils is
@@ -42,6 +48,26 @@ package body Spawn.Utils is
    package Random_Chars is new Ada.Numerics.Discrete_Random
      (Result_Subtype => Chars_Range);
    Generator : Random_Chars.Generator;
+
+   -------------------------------------------------------------------------
+
+   procedure Clear_Signal_Mask
+   is
+      use System.OS_Interface;
+      use type Interfaces.C.int;
+
+      Mask : aliased sigset_t;
+   begin
+      if sigemptyset (set => Mask'Access) /= 0 then
+         raise Signal_Error with "Unable to init empty signal mask";
+      end if;
+
+      if pthread_sigmask (how  => SIG_SETMASK,
+                          set  => Mask'Access,
+                          oset => null) /= 0 then
+         raise Signal_Error with "Unable to clear signal mask";
+      end if;
+   end Clear_Signal_Mask;
 
    -------------------------------------------------------------------------
 
