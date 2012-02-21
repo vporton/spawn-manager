@@ -27,17 +27,35 @@
 --  executable file might be covered by the GNU Public License.
 --
 
-with Ada.Text_IO;
+with Ada.Directories;
 
-package Spawn.Logger is
+package body Spawn.Logger is
 
-   procedure Log (Message : String) renames Ada.Text_IO.Put_Line;
-   --  Log given message to console.
+   Logfile : Ada.Text_IO.File_Type;
 
-   procedure Log_File (Message : String);
-   --  Log given message to file.
+   -------------------------------------------------------------------------
 
-   procedure Init_Logfile (Path : String);
-   --  Init logfile with given path.
+   procedure Init_Logfile (Path : String)
+   is
+   begin
+      if Ada.Directories.Exists (Name => Path) then
+         Ada.Text_IO.Open (File => Logfile,
+                           Mode => Ada.Text_IO.Out_File,
+                           Name => Path);
+      else
+         Ada.Text_IO.Create (File => Logfile,
+                             Mode => Ada.Text_IO.Out_File,
+                             Name => Path);
+      end if;
+   end Init_Logfile;
+
+   -------------------------------------------------------------------------
+
+   procedure Log_File (Message : String)
+   is
+   begin
+      Ada.Text_IO.Put_Line (File => Logfile,
+                            Item => Message);
+   end Log_File;
 
 end Spawn.Logger;
