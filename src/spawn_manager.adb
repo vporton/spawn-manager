@@ -67,7 +67,7 @@ is
       Sock_Comm.Send (Item => Spawn.Types.Serialize
                       (Data => (Success => Success,
                                 others  => <>)));
-      pragma Debug (L.Log ("Manager - reply sent [" & Success'Img & "]"));
+      pragma Debug (L.Log_File ("Reply sent [" & Success'Img & "]"));
    end Send_Reply;
 
 begin
@@ -83,6 +83,9 @@ begin
       return;
    end if;
 
+   pragma Debug (L.Init_Logfile
+                 (Path => Ada.Command_Line.Argument (1) & ".log"));
+
    Spawn.Utils.Expand_Search_Path (Cmd_Path => Ada.Command_Line.Command_Name);
    Spawn.Utils.Clear_Signal_Mask;
 
@@ -91,11 +94,11 @@ begin
    Sock_Listen.Bind_Unix
      (Path => Anet.Sockets.Unix_Path_Type (Ada.Command_Line.Argument (1)));
    Sock_Listen.Listen_Unix;
-   pragma Debug (L.Log ("Manager - listening on socket "
+   pragma Debug (L.Log_File ("Listening on socket "
      & Ada.Command_Line.Argument (1)));
 
    Sock_Listen.Accept_Socket (New_Socket => Sock_Comm);
-   pragma Debug (L.Log ("Manager - connection established"));
+   pragma Debug (L.Log_File ("Connection established"));
 
    Main :
    loop
@@ -107,20 +110,20 @@ begin
          Req      : Spawn.Types.Data_Type;
          Sender   : Anet.Sockets.Socket_Addr_Type;
       begin
-         pragma Debug (L.Log ("Manager - waiting for data"));
+         pragma Debug (L.Log_File ("Waiting for data"));
          Sock_Comm.Receive (Src  => Sender,
                             Item => Buffer,
                             Last => Last_Idx);
 
-         pragma Debug (L.Log ("Manager - received" & Last_Idx'Img & " bytes"));
+         pragma Debug (L.Log_File ("Received" & Last_Idx'Img & " bytes"));
          exit Main when Last_Idx = 0;
 
          Req := Spawn.Types.Deserialize
            (Buffer => Buffer (Buffer'First .. Last_Idx));
 
-         pragma Debug (L.Log ("Manager - command request received:"));
-         pragma Debug (L.Log ("Manager - cmd  [" & S (Req.Command) & "]"));
-         pragma Debug (L.Log ("Manager - dir  [" & S (Req.Dir) & "]"));
+         pragma Debug (L.Log_File ("Command request received:"));
+         pragma Debug (L.Log_File ("- CMD  [" & S (Req.Command) & "]"));
+         pragma Debug (L.Log_File ("- DIR  [" & S (Req.Dir) & "]"));
 
          declare
             Args   : GNAT.OS_Lib.Argument_List (1 .. 4);
@@ -152,13 +155,20 @@ begin
 
       exception
          when E : others =>
-            pragma Debug (L.Log ("Manager - exception:"));
-            pragma Debug (L.Log (Ada.Exceptions.Exception_Information (E)));
+            pragma Debug (L.Log_File ("Exception in main loop:"));
+            pragma Debug (L.Log_File
+                          (Ada.Exceptions.Exception_Information (E)));
             Send_Reply (Success => False);
       end;
    end loop Main;
 
-   pragma Debug (L.Log ("Manager - shutting down"));
+   pragma Debug (L.Log_File ("Shutting down"));
    Anet.OS.Delete_File (Filename => Ada.Command_Line.Argument (1));
    Ada.Command_Line.Set_Exit_Status (Code => Ada.Command_Line.Success);
+
+exception
+   when E : others =>
+      pragma Debug (L.Log_File ("Unhandled exception:"));
+      pragma Debug (L.Log_File (Ada.Exceptions.Exception_Information (E)));
+      raise;
 end Spawn_Manager;
