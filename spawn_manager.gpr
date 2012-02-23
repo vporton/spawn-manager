@@ -12,9 +12,10 @@ project Spawn_Manager is
    Compiler_Switches := Spawn_Common.Compiler_Switches;
 
    case Build is
-      when "prod"  => null;
+      when "prod"  =>
+         Compiler_Switches := Compiler_Switches & "-gnatwale";
       when "debug" =>
-         Compiler_Switches := Compiler_Switches & "-gnata";
+         Compiler_Switches := Compiler_Switches & "-gnata" & "-gnatwal";
    end case;
 
    package Compiler is

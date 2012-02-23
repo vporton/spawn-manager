@@ -8,8 +8,10 @@ project Spawn_Lib is
    for Library_Dir use "lib";
    for Library_Kind use "static";
 
+   Compiler_Switches := Spawn_Common.Compiler_Switches & "-gnatwale";
+
    package Compiler is
-      for Default_Switches ("ada") use Spawn_Common.Compiler_Switches;
+      for Default_Switches ("ada") use Compiler_Switches;
    end Compiler;
 
    package Binder is

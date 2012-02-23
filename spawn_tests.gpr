@@ -9,7 +9,7 @@ project Spawn_Tests is
    for Main use ("test_runner.adb");
    for Source_Dirs use Spawn_Common.Source_Dirs & "tests";
 
-   Compiler_Switches := Spawn_Common.Compiler_Switches & "-gnata";
+   Compiler_Switches := Spawn_Common.Compiler_Switches & "-gnata" & "-gnatwal";
    Linker_Switches   := ();
 
    case Build is

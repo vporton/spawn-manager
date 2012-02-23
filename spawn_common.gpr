@@ -8,7 +8,6 @@ project Spawn_Common is
    Compiler_Switches := ("-gnatygAdISuxo",
                          "-gnatVa",
                          "-gnat05",
-                         "-gnatwal",
                          "-gnatf",
                          "-fstack-check",
                          "-gnato",
