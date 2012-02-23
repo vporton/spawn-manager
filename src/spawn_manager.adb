@@ -41,6 +41,7 @@ with Anet.Sockets;
 with Spawn.Types;
 with Spawn.Utils;
 with Spawn.Logger;
+with Spawn.Signals;
 
 procedure Spawn_Manager
 is
@@ -56,7 +57,7 @@ is
    Shell : constant String := "/bin/bash";
    --  Shell used to execute commands.
 
-   Sock_Listen, Sock_Comm : Anet.Sockets.Socket_Type;
+   Sock_Listen, Sock_Comm : aliased Anet.Sockets.Socket_Type;
 
    procedure Send_Reply (Success : Boolean);
    --  Send reply message indicating success or failure.
@@ -83,88 +84,97 @@ begin
       return;
    end if;
 
-   pragma Debug (L.Init_Logfile
-                 (Path => Ada.Command_Line.Argument (1) & ".log"));
-
-   Spawn.Utils.Expand_Search_Path (Cmd_Path => Ada.Command_Line.Command_Name);
-   Spawn.Utils.Clear_Signal_Mask;
+   Spawn.Utils.Expand_Search_Path
+     (Cmd_Path => Ada.Command_Line.Command_Name);
 
    Sock_Listen.Create (Family => Anet.Sockets.Family_Unix,
                        Mode   => Anet.Sockets.Stream_Socket);
-   Sock_Listen.Bind_Unix
-     (Path => Anet.Sockets.Unix_Path_Type (Ada.Command_Line.Argument (1)));
-   Sock_Listen.Listen_Unix;
-   pragma Debug (L.Log_File ("Listening on socket "
-     & Ada.Command_Line.Argument (1)));
 
-   Sock_Listen.Accept_Socket (New_Socket => Sock_Comm);
-   pragma Debug (L.Log_File ("Connection established"));
+   declare
+      Socket_Path : aliased String := Ada.Command_Line.Argument (1);
+      Handler     : Spawn.Signals.Exit_Handler_Type
+        (Socket_L    => Sock_Listen'Access,
+         Socket_C    => Sock_Comm'Access,
+         Socket_Path => Socket_Path'Access);
+      pragma Unreserve_All_Interrupts;
+      pragma Unreferenced (Handler);
+   begin
+      pragma Debug (L.Init_Logfile (Path => Socket_Path & ".log"));
 
-   Main :
-   loop
-      declare
-         use type Ada.Streams.Stream_Element_Offset;
+      Sock_Listen.Bind_Unix (Path => Anet.Sockets.Unix_Path_Type
+                             (Socket_Path));
+      Sock_Listen.Listen_Unix;
+      pragma Debug (L.Log_File ("Listening on socket " & Socket_Path));
 
-         Buffer   : Ada.Streams.Stream_Element_Array (1 .. 8192);
-         Last_Idx : Ada.Streams.Stream_Element_Offset;
-         Req      : Spawn.Types.Data_Type;
-         Sender   : Anet.Sockets.Socket_Addr_Type;
-      begin
-         pragma Debug (L.Log_File ("Waiting for data"));
-         Sock_Comm.Receive (Src  => Sender,
-                            Item => Buffer,
-                            Last => Last_Idx);
+      Sock_Listen.Accept_Socket (New_Socket => Sock_Comm);
+      pragma Debug (L.Log_File ("Connection established"));
 
-         pragma Debug (L.Log_File ("Received" & Last_Idx'Img & " bytes"));
-         exit Main when Last_Idx = 0;
-
-         Req := Spawn.Types.Deserialize
-           (Buffer => Buffer (Buffer'First .. Last_Idx));
-
-         pragma Debug (L.Log_File ("Command request received:"));
-         pragma Debug (L.Log_File ("- CMD  [" & S (Req.Command) & "]"));
-         pragma Debug (L.Log_File ("- DIR  [" & S (Req.Dir) & "]"));
-
+      Main :
+      loop
          declare
-            Args   : GNAT.OS_Lib.Argument_List (1 .. 4);
-            Dir    : constant String := To_String (Req.Dir);
-            Status : Boolean;
+            use type Ada.Streams.Stream_Element_Offset;
+
+            Buffer   : Ada.Streams.Stream_Element_Array (1 .. 8192);
+            Last_Idx : Ada.Streams.Stream_Element_Offset;
+            Req      : Spawn.Types.Data_Type;
+            Sender   : Anet.Sockets.Socket_Addr_Type;
          begin
-            if Dir'Length /= 0
-              and then Dir /= Ada.Directories.Current_Directory
-            then
-               Ada.Directories.Set_Directory (Directory => Dir);
-            end if;
+            pragma Debug (L.Log_File ("Waiting for data"));
+            Sock_Comm.Receive (Src  => Sender,
+                               Item => Buffer,
+                               Last => Last_Idx);
 
-            Args (1) := new String'("-o");
-            Args (2) := new String'("pipefail");
-            Args (3) := new String'("-c");
-            Args (4) := new String'(To_String (Req.Command));
+            pragma Debug (L.Log_File ("Received" & Last_Idx'Img & " bytes"));
+            exit Main when Last_Idx = 0;
 
-            GNAT.OS_Lib.Spawn
-              (Program_Name => Shell,
-               Args         => Args,
-               Success      => Status);
+            Req := Spawn.Types.Deserialize
+              (Buffer => Buffer (Buffer'First .. Last_Idx));
 
-            for A in Args'Range loop
-               GNAT.OS_Lib.Free (X => Args (A));
-            end loop;
+            pragma Debug (L.Log_File ("Command request received:"));
+            pragma Debug (L.Log_File ("- CMD  [" & S (Req.Command) & "]"));
+            pragma Debug (L.Log_File ("- DIR  [" & S (Req.Dir) & "]"));
 
-            Send_Reply (Success => Status);
+            declare
+               Args   : GNAT.OS_Lib.Argument_List (1 .. 4);
+               Dir    : constant String := To_String (Req.Dir);
+               Status : Boolean;
+            begin
+               if Dir'Length /= 0
+                 and then Dir /= Ada.Directories.Current_Directory
+               then
+                  Ada.Directories.Set_Directory (Directory => Dir);
+               end if;
+
+               Args (1) := new String'("-o");
+               Args (2) := new String'("pipefail");
+               Args (3) := new String'("-c");
+               Args (4) := new String'(To_String (Req.Command));
+
+               GNAT.OS_Lib.Spawn
+                 (Program_Name => Shell,
+                  Args         => Args,
+                  Success      => Status);
+
+               for A in Args'Range loop
+                  GNAT.OS_Lib.Free (X => Args (A));
+               end loop;
+
+               Send_Reply (Success => Status);
+            end;
+
+         exception
+            when E : others =>
+               pragma Debug (L.Log_File ("Exception in main loop:"));
+               pragma Debug
+                 (L.Log_File (Ada.Exceptions.Exception_Information (E)));
+               Send_Reply (Success => False);
          end;
+      end loop Main;
 
-      exception
-         when E : others =>
-            pragma Debug (L.Log_File ("Exception in main loop:"));
-            pragma Debug (L.Log_File
-                          (Ada.Exceptions.Exception_Information (E)));
-            Send_Reply (Success => False);
-      end;
-   end loop Main;
-
-   pragma Debug (L.Log_File ("Shutting down"));
-   Anet.OS.Delete_File (Filename => Ada.Command_Line.Argument (1));
-   Ada.Command_Line.Set_Exit_Status (Code => Ada.Command_Line.Success);
+      pragma Debug (L.Log_File ("Shutting down"));
+      Anet.OS.Delete_File (Filename => Socket_Path);
+      Ada.Command_Line.Set_Exit_Status (Code => Ada.Command_Line.Success);
+   end;
 
 exception
    when E : others =>
