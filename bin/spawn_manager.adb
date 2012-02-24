@@ -55,7 +55,6 @@ is
       renames Ada.Strings.Unbounded.To_String;
 
    Shell : constant String := "/bin/bash";
-   Env   : constant String := "/usr/bin/env";
 
    Sock_Listen, Sock_Comm : aliased Anet.Sockets.Socket_Type;
 
@@ -91,7 +90,9 @@ begin
                        Mode   => Anet.Sockets.Stream_Socket);
 
    declare
-      Socket_Path : aliased String := Ada.Command_Line.Argument (1);
+      Wrapper     : constant String := Spawn.Utils.Locate_Exec_On_Path
+        (Name => "spawn_wrapper");
+      Socket_Path : aliased String  := Ada.Command_Line.Argument (1);
       Handler     : Spawn.Signals.Exit_Handler_Type
         (Socket_L    => Sock_Listen'Access,
          Socket_C    => Sock_Comm'Access,
@@ -135,7 +136,7 @@ begin
             pragma Debug (L.Log_File ("- DIR  [" & S (Req.Dir) & "]"));
 
             declare
-               Args   : GNAT.OS_Lib.Argument_List (1 .. 6);
+               Args   : GNAT.OS_Lib.Argument_List (1 .. 5);
                Dir    : constant String := To_String (Req.Dir);
                Status : Boolean;
             begin
@@ -145,15 +146,14 @@ begin
                   Ada.Directories.Set_Directory (Directory => Dir);
                end if;
 
-               Args (1) := new String'("spawn_wrapper");
-               Args (2) := new String'(Shell);
-               Args (3) := new String'("-o");
-               Args (4) := new String'("pipefail");
-               Args (5) := new String'("-c");
-               Args (6) := new String'(To_String (Req.Command));
+               Args (1) := new String'(Shell);
+               Args (2) := new String'("-o");
+               Args (3) := new String'("pipefail");
+               Args (4) := new String'("-c");
+               Args (5) := new String'(To_String (Req.Command));
 
                GNAT.OS_Lib.Spawn
-                 (Program_Name => Env,
+                 (Program_Name => Wrapper,
                   Args         => Args,
                   Success      => Status);
 
