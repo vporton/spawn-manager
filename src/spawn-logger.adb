@@ -56,6 +56,7 @@ package body Spawn.Logger is
    begin
       Ada.Text_IO.Put_Line (File => Logfile,
                             Item => Message);
+      Ada.Text_IO.Flush (File => Logfile);
    end Log_File;
 
 end Spawn.Logger;
