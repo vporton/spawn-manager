@@ -34,6 +34,7 @@ perf: spawn_performance spawn_manager
 	@$(OBJDIR)/perf/performance
 
 $(OBJDIR)/spawn_wrapper: bin/spawn_wrapper.c
+	@mkdir -p $(OBJDIR)
 	$(CC) -static $(CFLAGS) -o $@ $<
 
 install: install_lib install_manager
