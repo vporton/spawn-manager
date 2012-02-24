@@ -89,6 +89,8 @@ begin
    Sock_Listen.Create (Family => Anet.Sockets.Family_Unix,
                        Mode   => Anet.Sockets.Stream_Socket);
 
+   pragma Debug (L.Init_Logfile
+                 (Path => Ada.Command_Line.Argument (1) & ".log"));
    declare
       Wrapper     : constant String := Spawn.Utils.Locate_Exec_On_Path
         (Name => "spawn_wrapper");
@@ -100,8 +102,6 @@ begin
       pragma Unreserve_All_Interrupts;
       pragma Unreferenced (Handler);
    begin
-      pragma Debug (L.Init_Logfile (Path => Socket_Path & ".log"));
-
       Sock_Listen.Bind_Unix (Path => Anet.Sockets.Unix_Path_Type
                              (Socket_Path));
       pragma Debug (L.Log_File ("Listening on socket " & Socket_Path));
