@@ -43,6 +43,11 @@ package Spawn.Utils is
    --  by path is available. An exception is raised if the socket is not
    --  present after the timespan has passed.
 
-   Socket_Error : exception;
+   function Locate_Exec_On_Path (Name : String) return String;
+   --  Find given executable in environment $PATH. If the executable is not
+   --  found an Exec_Not_Found exception is raised.
+
+   Socket_Error   : exception;
+   Exec_Not_Found : exception;
 
 end Spawn.Utils;

@@ -67,6 +67,27 @@ package body Spawn.Utils is
 
    -------------------------------------------------------------------------
 
+   function Locate_Exec_On_Path (Name : String) return String
+   is
+      use type GNAT.OS_Lib.String_Access;
+
+      Exec : GNAT.OS_Lib.String_Access;
+   begin
+      Exec := GNAT.OS_Lib.Locate_Exec_On_Path (Exec_Name => Name);
+      if Exec = null then
+         raise Exec_Not_Found with "Could not locate '" & Name & "' in PATH";
+      end if;
+
+      declare
+         Path : constant String := Exec.all;
+      begin
+         GNAT.OS_Lib.Free (Exec);
+         return Path;
+      end;
+   end Locate_Exec_On_Path;
+
+   -------------------------------------------------------------------------
+
    function Random_String (Len : Positive) return String
    is
       Result : String (1 .. Len);

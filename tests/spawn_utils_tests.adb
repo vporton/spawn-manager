@@ -58,7 +58,32 @@ package body Spawn_Utils_Tests is
       T.Add_Test_Routine
         (Routine => Get_Random_Strings'Access,
          Name    => "Get random strings");
+      T.Add_Test_Routine
+        (Routine => Locate_Executables'Access,
+         Name    => "Locate executables in PATH");
    end Initialize;
+
+   -------------------------------------------------------------------------
+
+   procedure Locate_Executables
+   is
+   begin
+      Assert (Condition => Locate_Exec_On_Path (Name => "bash") = "/bin/bash",
+              Message   => "Unexpected path");
+
+      begin
+         declare
+            Path : constant String := Locate_Exec_On_Path
+              (Name => "nonexistent");
+            pragma Unreferenced (Path);
+         begin
+            Fail (Message => "Exception expected");
+         end;
+
+      exception
+         when Exec_Not_Found => null;
+      end;
+   end Locate_Executables;
 
    -------------------------------------------------------------------------
 

@@ -42,4 +42,7 @@ package Spawn_Utils_Tests is
    procedure Get_Random_Strings;
    --  Test Random_String function.
 
+   procedure Locate_Executables;
+   --  Locate executables in PATH.
+
 end Spawn_Utils_Tests;
