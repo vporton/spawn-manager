@@ -60,17 +60,19 @@ begin
    Runtime := Duration (0);
 
    declare
-      Args : GNAT.OS_Lib.Argument_List (1 .. 4);
+      Args : GNAT.OS_Lib.Argument_List (1 .. 6);
    begin
-      Args (1) := new String'("-o");
-      Args (2) := new String'("pipefail");
-      Args (3) := new String'("-c");
-      Args (4) := new String'(Cmd);
+      Args (1) := new String'("spawn_wrapper");
+      Args (2) := new String'("/bin/bash");
+      Args (3) := new String'("-o");
+      Args (4) := new String'("pipefail");
+      Args (5) := new String'("-c");
+      Args (6) := new String'(Cmd);
 
       for I in  1 .. Loops loop
          Start := Ada.Calendar.Clock;
          GNAT.OS_Lib.Spawn
-           (Program_Name => "/bin/bash",
+           (Program_Name => "/usr/bin/env",
             Args         => Args,
             Success      => Status);
          Runtime := Runtime + (Ada.Calendar.Clock - Start);
