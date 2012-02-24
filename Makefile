@@ -7,6 +7,8 @@ COVDIR = $(OBJDIR)/cov
 
 GPR_FILE = gnat/spawn.gpr
 
+CFLAGS = -W -Wall -Werror -O3
+
 all: spawn_lib spawn_manager
 
 spawn_tests:
@@ -16,10 +18,10 @@ tests: spawn_tests spawn_manager_debug
 	@$(OBJDIR)/spawn_manager /tmp/spawn_manager_0 &
 	@$(OBJDIR)/test_runner
 
-spawn_manager:
+spawn_manager: $(OBJDIR)/spawn_wrapper
 	@gnatmake -P$@ -p
 
-spawn_manager_debug:
+spawn_manager_debug: $(OBJDIR)/spawn_wrapper
 	@gnatmake -Pspawn_manager -p -XBUILD="debug"
 
 spawn_performance:
@@ -30,6 +32,9 @@ spawn_lib:
 
 perf: spawn_performance spawn_manager
 	@$(OBJDIR)/perf/performance
+
+$(OBJDIR)/spawn_wrapper: bin/spawn_wrapper.c
+	$(CC) -static $(CFLAGS) -o $@ $<
 
 install: install_lib install_manager
 
@@ -44,6 +49,7 @@ install_lib: spawn_lib
 
 install_manager: spawn_manager
 	install -m 755 $(OBJDIR)/spawn_manager $(PREFIX)
+	install -m 755 $(OBJDIR)/spawn_wrapper $(PREFIX)
 
 cov:
 	@rm -f $(COVDIR)/*.gcda

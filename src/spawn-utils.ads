@@ -43,10 +43,6 @@ package Spawn.Utils is
    --  by path is available. An exception is raised if the socket is not
    --  present after the timespan has passed.
 
-   procedure Clear_Signal_Mask;
-   --  Clear signal mask of calling task.
-
    Socket_Error : exception;
-   Signal_Error : exception;
 
 end Spawn.Utils;
