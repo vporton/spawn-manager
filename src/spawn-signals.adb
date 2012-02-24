@@ -31,8 +31,6 @@ with Ada.Command_Line;
 
 with GNAT.OS_Lib;
 
-with Anet.OS;
-
 with Spawn.Logger;
 
 package body Spawn.Signals is
@@ -51,7 +49,6 @@ package body Spawn.Signals is
          pragma Debug (L.Log_File ("Signal received - shutting down"));
          Socket_L.Close;
          Socket_C.Close;
-         Anet.OS.Delete_File (Filename => Socket_Path.all);
          GNAT.OS_Lib.OS_Exit (Status => Integer (Ada.Command_Line.Success));
       end Handle_Signal;
 

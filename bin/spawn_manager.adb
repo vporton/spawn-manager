@@ -35,7 +35,6 @@ with Ada.Exceptions;
 
 with GNAT.OS_Lib;
 
-with Anet.OS;
 with Anet.Sockets;
 
 with Spawn.Types;
@@ -94,11 +93,10 @@ begin
    declare
       Wrapper     : constant String := Spawn.Utils.Locate_Exec_On_Path
         (Name => "spawn_wrapper");
-      Socket_Path : aliased String  := Ada.Command_Line.Argument (1);
+      Socket_Path : constant String := Ada.Command_Line.Argument (1);
       Handler     : Spawn.Signals.Exit_Handler_Type
-        (Socket_L    => Sock_Listen'Access,
-         Socket_C    => Sock_Comm'Access,
-         Socket_Path => Socket_Path'Access);
+        (Socket_L => Sock_Listen'Access,
+         Socket_C => Sock_Comm'Access);
       pragma Unreserve_All_Interrupts;
       pragma Unreferenced (Handler);
    begin
@@ -174,7 +172,6 @@ begin
       end loop Main;
 
       pragma Debug (L.Log_File ("Shutting down"));
-      Anet.OS.Delete_File (Filename => Socket_Path);
       Ada.Command_Line.Set_Exit_Status (Code => Ada.Command_Line.Success);
    end;
 

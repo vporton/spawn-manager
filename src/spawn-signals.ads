@@ -34,9 +34,8 @@ with Anet.Sockets;
 package Spawn.Signals is
 
    protected type Exit_Handler_Type
-     (Socket_L    : access Anet.Sockets.Socket_Type;
-      Socket_C    : access Anet.Sockets.Socket_Type;
-      Socket_Path : access String)
+     (Socket_L : access Anet.Sockets.Socket_Type;
+      Socket_C : access Anet.Sockets.Socket_Type)
    is
    private
       procedure Handle_Signal;
