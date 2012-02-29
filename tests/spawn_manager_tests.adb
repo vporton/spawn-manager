@@ -66,7 +66,9 @@ package body Spawn_Manager_Tests is
    begin
       S.Create (Family => Anet.Sockets.Family_Unix,
                 Mode   => Anet.Sockets.Stream_Socket);
-      S.Connect (Path => "/tmp/spawn_manager_0");
+      S.Connect (Dst => (Family => Anet.Sockets.Family_Unix,
+                         Path   => To_Unbounded_String
+                           ("/tmp/spawn_manager_0")));
 
       S.Send (Item => Types.Serialize (Data => Req));
       declare

@@ -103,9 +103,9 @@ begin
       Sock_Listen.Bind_Unix (Path => Anet.Sockets.Unix_Path_Type
                              (Socket_Path));
       pragma Debug (L.Log_File ("Listening on socket " & Socket_Path));
-      Sock_Listen.Listen_Unix;
+      Sock_Listen.Listen;
 
-      Sock_Listen.Accept_Socket (New_Socket => Sock_Comm);
+      Sock_Listen.Accept_Connection (New_Socket => Sock_Comm);
       pragma Debug (L.Log_File ("Connection established"));
 
       Main :
