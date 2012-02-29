@@ -14,7 +14,7 @@ all: spawn_lib spawn_manager
 spawn_tests:
 	@gnatmake -P$@ -p
 
-tests: spawn_tests spawn_manager_debug
+tests: spawn_tests spawn_manager
 	@$(OBJDIR)/spawn_manager /tmp/spawn_manager_0 &
 	@$(OBJDIR)/test_runner
 
