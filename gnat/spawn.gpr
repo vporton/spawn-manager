@@ -3,7 +3,8 @@ with "anet";
 project Spawn is
    for Source_Dirs use ("../../include/spawn");
    for Library_Name use "spawn";
-   for Library_Dir use "../../lib/spawn";
+   for Library_Dir use "../../lib";
+   for Library_ALI_Dir use "../../lib/spawn";
    for Library_Kind use "static";
    for Externally_Built use "true";
 end Spawn;

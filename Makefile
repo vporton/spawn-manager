@@ -45,7 +45,7 @@ install_lib: spawn_lib
 	install -d $(PREFIX)/lib/gnat
 	install -m 644 $(SRCDIR)/*.ad[bs] $(PREFIX)/include/spawn
 	install -m 444 $(LIBDIR)/*.ali $(PREFIX)/lib/spawn
-	install -m 444 $(LIBDIR)/libspawn.a $(PREFIX)/lib/spawn
+	install -m 444 $(LIBDIR)/libspawn.a $(PREFIX)/lib
 	install -m 644 $(GPR_FILE) $(PREFIX)/lib/gnat
 
 install_manager: spawn_manager
