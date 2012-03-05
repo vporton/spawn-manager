@@ -60,9 +60,13 @@ cov:
 	@lcov -e $(COVDIR)/cov.info "$(PWD)/src/*.adb" -o $(COVDIR)/cov.info
 	@genhtml --no-branch-coverage $(COVDIR)/cov.info -o $(COVDIR)
 
+doc:
+	@$(MAKE) -C doc
+
 clean:
 	@rm -rf $(OBJDIR)
 	@rm -rf $(LIBDIR)
+	@$(MAKE) -C doc clean
 
-PHONY: clean cov build install install_lib install_manager perf spawn_lib \
+.PHONY: clean cov doc install install_lib install_manager perf spawn_lib \
 	spawn_performance spawn_manager spawn_manager_debug spawn_tests tests
