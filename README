@@ -1,0 +1,80 @@
+Ada Spawn Manager
+=================
+
+The Ada spawn manager implements the concept described in the GNAT GPL
+package System.OS_Lib. It is used to solve the problem of spawning
+processes at arbitrary times from multitasking Ada programs:
+
+[quote, GNAT COMPILER COMPONENTS, SYSTEM.OS_LIB specification]
+____
+If the parent is using tasking, and needs to spawn subprocesses at arbitrary
+times, one technique is for the parent to spawn (very early) a particular
+spawn-manager subprocess whose job is to spawn other processes. The
+spawn-manager avoids tasking. The parent sends messages to the spawn-manager
+requesting it to spawn processes, using whatever inter-process communication
+mechanism you like, such as sockets.
+____
+
+The Ada spawn manager uses UNIX domain sockets provided by the Anet library to
+implement fast and simple IPC.
+
+Licence
+-------
+--------------------------------------------------------------------------------
+Copyright (C) 2012 secunet Security Networks AG
+Copyright (C) 2012 Reto Buerki <reet@codelabs.ch>
+
+Free use of this software is granted under the terms of the GNAT Modified
+General Public License (GMGPL).
+--------------------------------------------------------------------------------
+
+Download
+--------
+
+Release version
+~~~~~~~~~~~~~~~
+No releases yet, stay tuned.
+
+Development version
+~~~~~~~~~~~~~~~~~~~
+The current development version of the spawn manager is available through its git
+repository:
+
+  $ git clone http://git.codelabs.ch/git/spawn-manager.git
+
+A browsable version of the repository is also available here:
+http://git.codelabs.ch/?p=spawn-manager.git
+
+Build
+-----
+To compile the spawn manager on your system, you need to have the following
+software installed:
+
+* GNAT compiler:
+  http://www.gnu.org/software/gnat/gnat.html
+
+* Anet - Ada Networking Library:
+  http://www.codelabs.ch/anet/
+
+If you want to run the unit tests before installation (which is recommended) you
+furthermore need to have the following installed:
+
+* Ahven (Test-Framework):
+  http://ahven.stronglytyped.org/
+
+Testing
+-------
+The project contains a unit test suite which can be run by entering the
+following command:
+
+  $ make tests
+
+All tests should be marked with *PASS* behind the test name.
+
+Installation
+------------
+To install the spawn manager on your system, type the following:
+
+  $ make PREFIX=/usr/local install
+
+If no `PREFIX` is specified, `$(HOME)/ada` is used as install destination.
