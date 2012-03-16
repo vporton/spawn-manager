@@ -34,6 +34,7 @@ with Ada.Streams;
 with Ada.Exceptions;
 
 with GNAT.OS_Lib;
+with GNAT.Expect;
 
 with Anet.Sockets;
 with Anet.Streams;
@@ -145,9 +146,12 @@ begin
             pragma Debug (L.Log_File ("- DIR  [" & S (Req.Dir) & "]"));
 
             declare
-               Args   : GNAT.OS_Lib.Argument_List (1 .. 5);
-               Dir    : constant String := To_String (Req.Dir);
-               Status : Boolean;
+               Args  : GNAT.OS_Lib.Argument_List (1 .. 5);
+               Pd    : GNAT.Expect.Process_Descriptor;
+               Match : GNAT.Expect.Expect_Match;
+               Cmd   : constant String := To_String (Req.Command);
+               Dir   : constant String := To_String (Req.Dir);
+               Res   : Integer         := 1;
             begin
                if Dir'Length /= 0
                  and then Dir /= Ada.Directories.Current_Directory
@@ -159,18 +163,43 @@ begin
                Args (2) := new String'("-o");
                Args (3) := new String'("pipefail");
                Args (4) := new String'("-c");
-               Args (5) := new String'(To_String (Req.Command));
+               Args (5) := new String'(Cmd);
 
-               GNAT.OS_Lib.Spawn
-                 (Program_Name => Wrapper,
-                  Args         => Args,
-                  Success      => Status);
+               GNAT.Expect.Non_Blocking_Spawn
+                 (Descriptor  => Pd,
+                  Command     => Wrapper,
+                  Args        => Args,
+                  Buffer_Size => 0);
+
+               begin
+                  GNAT.Expect.Expect
+                    (Descriptor => Pd,
+                     Result     => Match,
+                     Regexp     => "",
+                     Timeout    => -1);
+
+               exception
+                  when GNAT.Expect.Process_Died =>
+                     GNAT.Expect.Close (Descriptor => Pd,
+                                        Status     => Res);
+               end;
+
+               case Match is
+                  when GNAT.Expect.Expect_Timeout =>
+                     GNAT.Expect.Close (Descriptor => Pd);
+                  when others => null;
+               end case;
 
                for A in Args'Range loop
                   GNAT.OS_Lib.Free (X => Args (A));
                end loop;
 
-               Send_Reply (Success => Status);
+               Send_Reply (Success => Res = 0);
+
+            exception
+               when GNAT.Expect.Invalid_Process =>
+                  pragma Debug (L.Log_File ("Could not spawn process " & Cmd));
+                  Send_Reply (Success => False);
             end;
 
          exception
