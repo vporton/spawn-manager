@@ -34,7 +34,6 @@ with Spawn.Pool;
 with Spawn.Utils;
 
 with Spawn_Pool_Tests;
-with Spawn_Types_Tests;
 with Spawn_Utils_Tests;
 with Spawn_Manager_Tests;
 
@@ -49,8 +48,6 @@ begin
 
    Add_Test (Suite => S.all,
              T     => new Spawn_Pool_Tests.Testcase);
-   Add_Test (Suite => S.all,
-             T     => new Spawn_Types_Tests.Testcase);
    Add_Test (Suite => S.all,
              T     => new Spawn_Utils_Tests.Testcase);
    Add_Test (Suite => S.all,

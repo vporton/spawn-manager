@@ -27,7 +27,6 @@
 --  executable file might be covered by the GNU Public License.
 --
 
-with Ada.Streams;
 with Ada.Strings.Unbounded;
 
 package Spawn.Types is
@@ -37,17 +36,5 @@ package Spawn.Types is
       Command : Ada.Strings.Unbounded.Unbounded_String;
       Dir     : Ada.Strings.Unbounded.Unbounded_String;
    end record;
-
-   function Serialize
-     (Data : Data_Type)
-      return Ada.Streams.Stream_Element_Array;
-   --  Serialize given data type.
-
-   function Deserialize
-     (Buffer : Ada.Streams.Stream_Element_Array)
-      return Data_Type;
-   --  Deserialize given data type.
-
-   Deserialize_Error : exception;
 
 end Spawn.Types;
