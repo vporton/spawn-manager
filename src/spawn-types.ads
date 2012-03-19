@@ -33,6 +33,7 @@ package Spawn.Types is
 
    type Data_Type is record
       Success : Boolean := False;
+      Timeout : Integer := -1;
       Command : Ada.Strings.Unbounded.Unbounded_String;
       Dir     : Ada.Strings.Unbounded.Unbounded_String;
    end record;

@@ -30,6 +30,7 @@
 with Ada.Text_IO;
 with Ada.Exceptions;
 with Ada.Directories;
+with Ada.Real_Time;
 
 with Spawn.Pool;
 
@@ -62,6 +63,39 @@ package body Spawn_Pool_Tests is
          Success := not Got_Exception;
       end Done;
    end Executor;
+
+   -------------------------------------------------------------------------
+
+   procedure Command_Timeout
+   is
+      use Ada.Real_Time;
+
+      Start : Time;
+      Span  : Time_Span := To_Time_Span (D => 100.0);
+   begin
+      begin
+         Start := Clock;
+
+         --  Command would run for 60 seconds but it should timeout after 50
+         --  milliseconds.
+
+         Spawn.Pool.Execute (Command => "/bin/sleep 60",
+                             Timeout => 50);
+         Fail (Message => "Failure expected");
+
+      exception
+         when Spawn.Pool.Command_Failed => Span := Clock - Start;
+      end;
+
+      Assert (Condition => Span >= Milliseconds (MS => 50),
+              Message   => "Timeout not >= 50ms");
+
+      --  Take heavy system load into account; allow up to 1s as upper
+      --  threshold
+
+      Assert (Condition => Span < Seconds (S => 1),
+              Message   => "Timeout not < 1s");
+   end Command_Timeout;
 
    -------------------------------------------------------------------------
 
@@ -145,6 +179,9 @@ package body Spawn_Pool_Tests is
       T.Add_Test_Routine
         (Routine => Pool_Depleted'Access,
          Name    => "Pool depleted");
+      T.Add_Test_Routine
+        (Routine => Command_Timeout'Access,
+         Name    => "Command timeout");
    end Initialize;
 
    -------------------------------------------------------------------------

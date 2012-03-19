@@ -98,12 +98,14 @@ package body Spawn.Pool is
 
    procedure Execute
      (Command   : String;
-      Directory : String := Ada.Directories.Current_Directory)
+      Directory : String  := Ada.Directories.Current_Directory;
+      Timeout   : Integer := -1)
    is
       Stream  : aliased Anet.Streams.Memory_Stream_Type (Max_Elements => 8192);
       Reply   : Types.Data_Type;
       Request : constant Types.Data_Type
-        := (Command => To_Unbounded_String (Command),
+        := (Timeout => Timeout,
+            Command => To_Unbounded_String (Command),
             Dir     => To_Unbounded_String (Directory),
             others  => <>);
    begin

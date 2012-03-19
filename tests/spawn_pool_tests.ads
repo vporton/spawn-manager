@@ -54,4 +54,7 @@ package Spawn_Pool_Tests is
    procedure Pool_Depleted;
    --  Verify exception handling if pool is depleted.
 
+   procedure Command_Timeout;
+   --  Test command timeout feature.
+
 end Spawn_Pool_Tests;

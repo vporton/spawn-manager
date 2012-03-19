@@ -176,7 +176,7 @@ begin
                     (Descriptor => Pd,
                      Result     => Match,
                      Regexp     => "",
-                     Timeout    => -1);
+                     Timeout    => Req.Timeout);
 
                exception
                   when GNAT.Expect.Process_Died =>

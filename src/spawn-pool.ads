@@ -37,8 +37,12 @@ package Spawn.Pool is
 
    procedure Execute
      (Command   : String;
-      Directory : String := Ada.Directories.Current_Directory);
-   --  Execute command in given directory.
+      Directory : String  := Ada.Directories.Current_Directory;
+      Timeout   : Integer := -1);
+   --  Execute command in given directory. The Timeout parameter specifies the
+   --  time in milliseconds after the command times out (the default is no
+   --  timeout (-1)). If a timeout occurs, a Command_Failed exception is raised
+   --  to indicate failure.
 
    procedure Cleanup;
    --  Cleanup spawn pool.
