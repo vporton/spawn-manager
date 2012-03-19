@@ -35,6 +35,7 @@ with GNAT.OS_Lib;
 with GNAT.Expect;
 
 with Anet.Sockets;
+with Anet.Streams;
 
 with Spawn.Types;
 with Spawn.Logger;
@@ -99,6 +100,7 @@ package body Spawn.Pool is
      (Command   : String;
       Directory : String := Ada.Directories.Current_Directory)
    is
+      Stream  : aliased Anet.Streams.Memory_Stream_Type (Max_Elements => 8192);
       Reply   : Types.Data_Type;
       Request : constant Types.Data_Type
         := (Command => To_Unbounded_String (Command),
@@ -107,10 +109,15 @@ package body Spawn.Pool is
    begin
       pragma Debug (L.Log ("Executing command '" & Command & "'"));
 
-      Reply := Types.Deserialize
-        (Buffer => Send_Receive
-           (Request => Types.Serialize
-              (Data => Request)));
+      Types.Data_Type'Write (Stream'Access, Request);
+
+      declare
+         Rcv_Data : constant Ada.Streams.Stream_Element_Array
+           := Send_Receive (Request => Stream.Get_Buffer);
+      begin
+         Stream.Set_Buffer (Buffer => Rcv_Data);
+         Types.Data_Type'Read (Stream'Access, Reply);
+      end;
 
       if not Reply.Success then
          raise Command_Failed with "Command failed: '" & Command & "'";
@@ -188,7 +195,7 @@ package body Spawn.Pool is
 
       Receive_Reponse :
       declare
-         Response : Ada.Streams.Stream_Element_Array (1 .. 4);
+         Response : Ada.Streams.Stream_Element_Array (1 .. 32);
          Last_Idx : Ada.Streams.Stream_Element_Offset;
          Sender   : Anet.Sockets.Socket_Addr_Type;
       begin

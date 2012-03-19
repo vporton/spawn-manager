@@ -36,6 +36,7 @@ with Ada.Exceptions;
 with GNAT.OS_Lib;
 
 with Anet.Sockets;
+with Anet.Streams;
 
 with Spawn.Types;
 with Spawn.Utils;
@@ -57,15 +58,21 @@ is
 
    Sock_Listen, Sock_Comm : aliased Anet.Sockets.Socket_Type;
 
+   Stream : aliased Anet.Streams.Memory_Stream_Type (Max_Elements => 8192);
+   --  In-memory stream used for request/response serialization.
+
    procedure Send_Reply (Success : Boolean);
    --  Send reply message indicating success or failure.
 
    procedure Send_Reply (Success : Boolean)
    is
+      Reply : constant Spawn.Types.Data_Type
+        := (Success => Success,
+            others  => <>);
    begin
-      Sock_Comm.Send (Item => Spawn.Types.Serialize
-                      (Data => (Success => Success,
-                                others  => <>)));
+      Stream.Clear;
+      Spawn.Types.Data_Type'Write (Stream'Access, Reply);
+      Sock_Comm.Send (Item => Stream.Get_Buffer);
       pragma Debug (L.Log_File ("Reply sent [" & Success'Img & "]"));
    end Send_Reply;
 
@@ -126,8 +133,8 @@ begin
             pragma Debug (L.Log_File ("Received" & Last_Idx'Img & " bytes"));
             exit Main when Last_Idx = 0;
 
-            Req := Spawn.Types.Deserialize
-              (Buffer => Buffer (Buffer'First .. Last_Idx));
+            Stream.Set_Buffer (Buffer => Buffer (Buffer'First .. Last_Idx));
+            Spawn.Types.Data_Type'Read (Stream'Access, Req);
 
             pragma Debug (L.Log_File ("Command request received:"));
             pragma Debug (L.Log_File ("- CMD  [" & S (Req.Command) & "]"));
