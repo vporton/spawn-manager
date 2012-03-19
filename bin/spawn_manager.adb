@@ -130,11 +130,15 @@ begin
                                Item => Buffer,
                                Last => Last_Idx);
 
-            pragma Debug (L.Log_File ("Received" & Last_Idx'Img & " bytes"));
+            pragma Debug (L.Log_File ("Received" & Last_Idx'Img & " byte(s)"));
             exit Main when Last_Idx = 0;
 
             Stream.Set_Buffer (Buffer => Buffer (Buffer'First .. Last_Idx));
             Spawn.Types.Data_Type'Read (Stream'Access, Req);
+            if Length (Req.Command) <= 1 then
+               raise Constraint_Error with "Invalid command of length"
+                 & Length (Req.Command)'Img & " received";
+            end if;
 
             pragma Debug (L.Log_File ("Command request received:"));
             pragma Debug (L.Log_File ("- CMD  [" & S (Req.Command) & "]"));

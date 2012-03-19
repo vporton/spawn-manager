@@ -31,6 +31,7 @@ with Ada.Streams;
 with Ada.Strings.Unbounded;
 
 with Anet.Sockets;
+with Anet.Streams;
 
 with Spawn.Types;
 
@@ -57,54 +58,74 @@ package body Spawn_Manager_Tests is
    is
       use Ada.Streams;
 
-      S   : Anet.Sockets.Socket_Type;
-      Req : constant Types.Data_Type
+      Stream   : aliased Anet.Streams.Memory_Stream_Type (Max_Elements => 32);
+      Socket   : Anet.Sockets.Socket_Type;
+      Invalid1 : constant Stream_Element_Array (1 .. 9) := (others => 16#ac#);
+      Invalid2 : constant Stream_Element_Array (1 .. 2) := (others => 234);
+      Req      : constant Types.Data_Type
         := (Command => To_Unbounded_String ("/bin/true"),
             others  => <>);
-
-      Invalid : constant Stream_Element_Array (1 .. 1) := (others => 12);
    begin
-      S.Create (Family => Anet.Sockets.Family_Unix,
-                Mode   => Anet.Sockets.Stream_Socket);
-      S.Connect (Dst => (Family => Anet.Sockets.Family_Unix,
-                         Path   => To_Unbounded_String
-                           ("/tmp/spawn_manager_0")));
+      Socket.Create (Family => Anet.Sockets.Family_Unix,
+                     Mode   => Anet.Sockets.Stream_Socket);
+      Socket.Connect (Dst => (Family => Anet.Sockets.Family_Unix,
+                              Path   => To_Unbounded_String
+                                ("/tmp/spawn_manager_0")));
 
-      S.Send (Item => Types.Serialize (Data => Req));
+      Socket.Send (Item => Invalid1);
       declare
          Data     : Stream_Element_Array (1 .. 128);
          Last_Idx : Stream_Element_Offset;
          Sender   : Anet.Sockets.Socket_Addr_Type;
          Response : Types.Data_Type;
       begin
-         S.Receive (Src  => Sender,
-                    Item => Data,
-                    Last => Last_Idx);
+         Socket.Receive (Src  => Sender,
+                         Item => Data,
+                         Last => Last_Idx);
 
-         Response := Types.Deserialize
-           (Buffer => Data (Data'First .. Last_Idx));
+         Stream.Set_Buffer (Buffer => Data (Data'First .. Last_Idx));
+         Types.Data_Type'Read (Stream'Access, Response);
+         Assert (Condition => not Response.Success,
+                 Message   => "Failure expected (1)");
+      end;
+
+      Socket.Send (Item => Invalid2);
+      declare
+         Data     : Stream_Element_Array (1 .. 128);
+         Last_Idx : Stream_Element_Offset;
+         Sender   : Anet.Sockets.Socket_Addr_Type;
+         Response : Types.Data_Type;
+      begin
+         Socket.Receive (Src  => Sender,
+                         Item => Data,
+                         Last => Last_Idx);
+
+         Stream.Set_Buffer (Buffer => Data (Data'First .. Last_Idx));
+         Types.Data_Type'Read (Stream'Access, Response);
+         Assert (Condition => not Response.Success,
+                 Message   => "Failure expected (2)");
+      end;
+
+      Stream.Clear;
+      Types.Data_Type'Write (Stream'Access, Req);
+      Socket.Send (Item => Stream.Get_Buffer);
+      declare
+         Data     : Stream_Element_Array (1 .. 128);
+         Last_Idx : Stream_Element_Offset;
+         Sender   : Anet.Sockets.Socket_Addr_Type;
+         Response : Types.Data_Type;
+      begin
+         Socket.Receive (Src  => Sender,
+                         Item => Data,
+                         Last => Last_Idx);
+
+         Stream.Set_Buffer (Buffer => Data (Data'First .. Last_Idx));
+         Types.Data_Type'Read (Stream'Access, Response);
          Assert (Condition => Response.Success,
                  Message   => "Cmd not successful");
       end;
 
-      S.Send (Item => Invalid);
-      declare
-         Data     : Stream_Element_Array (1 .. 128);
-         Last_Idx : Stream_Element_Offset;
-         Sender   : Anet.Sockets.Socket_Addr_Type;
-         Response : Types.Data_Type;
-      begin
-         S.Receive (Src  => Sender,
-                    Item => Data,
-                    Last => Last_Idx);
-
-         Response := Types.Deserialize
-           (Buffer => Data (Data'First .. Last_Idx));
-         Assert (Condition => not Response.Success,
-                 Message   => "Failure expected");
-      end;
-
-      S.Close;
+      Socket.Close;
    end Send_Receive;
 
 end Spawn_Manager_Tests;
