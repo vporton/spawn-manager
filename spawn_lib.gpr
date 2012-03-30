@@ -14,8 +14,4 @@ project Spawn_Lib is
       for Default_Switches ("ada") use Compiler_Switches;
    end Compiler;
 
-   package Binder is
-      for Default_Switches ("ada") use Spawn_Common.Binder_Switches;
-   end Binder;
-
 end Spawn_Lib;
