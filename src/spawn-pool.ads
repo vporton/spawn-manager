@@ -32,8 +32,12 @@ with Ada.Streams;
 
 package Spawn.Pool is
 
-   procedure Init (Manager_Count : Positive := 1);
-   --  Init pool with given number of spawn managers.
+   procedure Init
+     (Manager_Count : Positive := 1;
+      Socket_Dir    : String   := "/tmp");
+   --  Init pool with given number of spawn managers. The Socket_Dir argument
+   --  specifies the directory used to store spawn_manager communication
+   --  sockets.
 
    procedure Execute
      (Command   : String;

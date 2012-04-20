@@ -44,7 +44,7 @@ with Spawn.Utils;
 package body Spawn.Pool is
 
    Mngr_Bin  : constant String := "spawn_manager";
-   Addr_Base : constant String := "/tmp/spawn_manager-";
+   Addr_Base : constant String := "spawn_manager-";
 
    use Ada.Strings.Unbounded;
 
@@ -128,7 +128,9 @@ package body Spawn.Pool is
 
    -------------------------------------------------------------------------
 
-   procedure Init (Manager_Count : Positive := 1)
+   procedure Init
+     (Manager_Count : Positive := 1;
+      Socket_Dir    : String   := "/tmp")
    is
       use type GNAT.OS_Lib.Process_Id;
 
@@ -137,7 +139,7 @@ package body Spawn.Pool is
       for M in 1 .. Manager_Count loop
          declare
             Pid  : GNAT.Expect.Process_Descriptor;
-            Addr : constant String := Addr_Base
+            Addr : constant String := Socket_Dir & "/" & Addr_Base
               & Utils.Random_String (Len => 8);
          begin
             Args := GNAT.OS_Lib.Argument_String_To_List
