@@ -266,7 +266,7 @@ package body Spawn.Pool is
          end loop;
 
          if not Found then
-            raise Command_Failed with
+            raise Pool_Error with
               "No free spawn manager available, increase the pool size";
          end if;
 

@@ -51,6 +51,7 @@ package Spawn.Pool is
    procedure Cleanup;
    --  Cleanup spawn pool.
 
+   Pool_Error     : exception;
    Command_Failed : exception;
 
 private
