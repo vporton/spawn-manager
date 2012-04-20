@@ -31,6 +31,8 @@ with Ada.Directories;
 with Ada.Environment_Variables;
 with Ada.Numerics.Discrete_Random;
 
+with Interfaces.C;
+
 with GNAT.OS_Lib;
 
 package body Spawn.Utils is
@@ -42,6 +44,9 @@ package body Spawn.Utils is
    package Random_Chars is new Ada.Numerics.Discrete_Random
      (Result_Subtype => Chars_Range);
    Generator : Random_Chars.Generator;
+
+   function C_Getpid return Interfaces.C.int;
+   pragma Import (C, C_Getpid, "getpid");
 
    -------------------------------------------------------------------------
 
@@ -117,5 +122,6 @@ package body Spawn.Utils is
    end Wait_For_Socket;
 
 begin
-   Random_Chars.Reset (Gen => Generator);
+   Random_Chars.Reset (Gen       => Generator,
+                       Initiator => Integer (C_Getpid));
 end Spawn.Utils;
