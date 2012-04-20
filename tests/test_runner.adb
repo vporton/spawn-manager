@@ -30,7 +30,6 @@
 with Ahven.Text_Runner;
 with Ahven.Framework;
 
-with Spawn.Pool;
 with Spawn.Utils;
 
 with Spawn_Pool_Tests;
@@ -44,7 +43,6 @@ procedure Test_Runner is
      := Create_Suite (Suite_Name => "IPC/Spawn tests");
 begin
    Spawn.Utils.Expand_Search_Path (Cmd_Path => "obj/spawn_manager");
-   Spawn.Pool.Init (Manager_Count => 4);
 
    Add_Test (Suite => S.all,
              T     => new Spawn_Pool_Tests.Testcase);
@@ -56,10 +54,4 @@ begin
    Ahven.Text_Runner.Run (Suite => S);
    Release_Suite (T => S);
 
-   Spawn.Pool.Cleanup;
-
-exception
-   when others =>
-      Spawn.Pool.Cleanup;
-      raise;
 end Test_Runner;

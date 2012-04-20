@@ -73,6 +73,8 @@ package body Spawn_Pool_Tests is
       Start : Time;
       Span  : Time_Span := To_Time_Span (D => 100.0);
    begin
+      Spawn.Pool.Init;
+
       begin
          Start := Clock;
 
@@ -87,6 +89,8 @@ package body Spawn_Pool_Tests is
          when Spawn.Pool.Command_Failed => Span := Clock - Start;
       end;
 
+      Spawn.Pool.Cleanup;
+
       Assert (Condition => Span >= Milliseconds (MS => 50),
               Message   => "Timeout not >= 50ms");
 
@@ -95,6 +99,11 @@ package body Spawn_Pool_Tests is
 
       Assert (Condition => Span < Seconds (S => 1),
               Message   => "Timeout not < 1s");
+
+   exception
+      when others =>
+         Spawn.Pool.Cleanup;
+         raise;
    end Command_Timeout;
 
    -------------------------------------------------------------------------
@@ -102,11 +111,17 @@ package body Spawn_Pool_Tests is
    procedure Execute_Bin_False
    is
    begin
+      Spawn.Pool.Init;
       Spawn.Pool.Execute (Command => "/bin/false");
+      Spawn.Pool.Cleanup;
       Fail (Message => "Exception expected");
 
    exception
-      when Spawn.Pool.Command_Failed => null;
+      when Spawn.Pool.Command_Failed =>
+         Spawn.Pool.Cleanup;
+      when others =>
+         Spawn.Pool.Cleanup;
+         raise;
    end Execute_Bin_False;
 
    -------------------------------------------------------------------------
@@ -114,7 +129,14 @@ package body Spawn_Pool_Tests is
    procedure Execute_Bin_True
    is
    begin
+      Spawn.Pool.Init;
       Spawn.Pool.Execute (Command => "/bin/true");
+      Spawn.Pool.Cleanup;
+
+   exception
+      when others =>
+         Spawn.Pool.Cleanup;
+         raise;
    end Execute_Bin_True;
 
    -------------------------------------------------------------------------
@@ -125,7 +147,9 @@ package body Spawn_Pool_Tests is
       Cmd  : constant String := "dd if=/dev/zero bs=1 count=1 of=" & File
         & " > /dev/null 2>&1";
    begin
+      Spawn.Pool.Init;
       Spawn.Pool.Execute (Command => Cmd);
+      Spawn.Pool.Cleanup;
 
       Assert (Condition => Ada.Directories.Exists (Name => File),
               Message   => "File not found: " & File);
@@ -133,6 +157,7 @@ package body Spawn_Pool_Tests is
 
    exception
       when others =>
+         Spawn.Pool.Cleanup;
          Ada.Directories.Delete_File (Name => File);
          raise;
    end Execute_Complex_Command;
@@ -142,8 +167,11 @@ package body Spawn_Pool_Tests is
    procedure Execute_Nonexistent
    is
    begin
+      Spawn.Pool.Init;
+
       begin
          Spawn.Pool.Execute (Command => "nonexistent/binary");
+         Spawn.Pool.Cleanup;
          Fail (Message => "Exception expected");
 
       exception
@@ -153,6 +181,12 @@ package body Spawn_Pool_Tests is
       --  Check if manager is still responding to requests.
 
       Spawn.Pool.Execute (Command => "/bin/true");
+      Spawn.Pool.Cleanup;
+
+   exception
+      when others =>
+         Spawn.Pool.Cleanup;
+         raise;
    end Execute_Nonexistent;
 
    -------------------------------------------------------------------------
@@ -191,6 +225,7 @@ package body Spawn_Pool_Tests is
       Task_Array : array (1 .. 4) of Executor;
       Result     : Boolean := True;
    begin
+      Spawn.Pool.Init (Manager_Count => 4);
       for T in Task_Array'Range loop
          Task_Array (T).Call;
       end loop;
@@ -204,8 +239,15 @@ package body Spawn_Pool_Tests is
          end;
       end loop;
 
+      Spawn.Pool.Cleanup;
+
       Assert (Condition => Result,
               Message   => "Parallel execution failed");
+
+   exception
+      when others =>
+         Spawn.Pool.Cleanup;
+         raise;
    end Parallel_Execution;
 
    -------------------------------------------------------------------------
@@ -215,6 +257,8 @@ package body Spawn_Pool_Tests is
       Task_Array : array (1 .. 8) of Executor;
       Result     : Boolean := True;
    begin
+      Spawn.Pool.Init (Manager_Count => 4);
+
       for T in Task_Array'Range loop
          Task_Array (T).Call;
       end loop;
@@ -231,8 +275,14 @@ package body Spawn_Pool_Tests is
          end;
       end loop;
 
+      Spawn.Pool.Cleanup;
       Assert (Condition => not Result,
               Message   => "No call failed");
+
+   exception
+      when others =>
+         Spawn.Pool.Cleanup;
+         raise;
    end Pool_Depleted;
 
 end Spawn_Pool_Tests;
