@@ -189,6 +189,7 @@ package body Spawn_Pool_Tests is
    procedure Parallel_Execution
    is
       Task_Array : array (1 .. 4) of Executor;
+      Result     : Boolean := True;
    begin
       for T in Task_Array'Range loop
          Task_Array (T).Call;
@@ -196,13 +197,15 @@ package body Spawn_Pool_Tests is
 
       for T in Task_Array'Range loop
          declare
-            Result : Boolean;
+            Status : Boolean;
          begin
-            Task_Array (T).Done (Success => Result);
-            Assert (Condition => Result,
-                    Message   => "Parallel execution failed");
+            Task_Array (T).Done (Success => Status);
+            Result := Result and Status;
          end;
       end loop;
+
+      Assert (Condition => Result,
+              Message   => "Parallel execution failed");
    end Parallel_Execution;
 
    -------------------------------------------------------------------------
