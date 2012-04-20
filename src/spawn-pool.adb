@@ -136,6 +136,14 @@ package body Spawn.Pool is
 
       Args : GNAT.OS_Lib.Argument_List_Access;
    begin
+
+      --  Check if socket directory exists
+
+      if not Ada.Directories.Exists (Name => Socket_Dir) then
+         raise Pool_Error with "Socket directory '" & Socket_Dir
+           & "' does not exist";
+      end if;
+
       for M in 1 .. Manager_Count loop
          declare
             Pid  : GNAT.Expect.Process_Descriptor;

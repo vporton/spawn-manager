@@ -216,7 +216,21 @@ package body Spawn_Pool_Tests is
       T.Add_Test_Routine
         (Routine => Command_Timeout'Access,
          Name    => "Command timeout");
+      T.Add_Test_Routine
+        (Routine => Invalid_Socket_Directory'Access,
+         Name    => "Invalid socket directory");
    end Initialize;
+
+   -------------------------------------------------------------------------
+
+   procedure Invalid_Socket_Directory
+   is
+   begin
+      Spawn.Pool.Init (Socket_Dir => "/nonexistent/nonexistent");
+
+   exception
+      when Spawn.Pool.Pool_Error => null;
+   end Invalid_Socket_Directory;
 
    -------------------------------------------------------------------------
 

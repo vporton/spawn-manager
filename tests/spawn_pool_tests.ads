@@ -57,4 +57,7 @@ package Spawn_Pool_Tests is
    procedure Command_Timeout;
    --  Test command timeout feature.
 
+   procedure Invalid_Socket_Directory;
+   --  Verify error behavior with invalid socket directory.
+
 end Spawn_Pool_Tests;
