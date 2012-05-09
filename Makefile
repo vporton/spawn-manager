@@ -33,7 +33,7 @@ spawn_lib:
 perf: spawn_performance spawn_manager
 	@$(OBJDIR)/perf/performance
 
-$(OBJDIR)/spawn_wrapper: bin/spawn_wrapper.c
+$(OBJDIR)/spawn_wrapper: tools/spawn_wrapper.c
 	@mkdir -p $(OBJDIR)
 	$(CC) -static $(CFLAGS) -o $@ $<
 
