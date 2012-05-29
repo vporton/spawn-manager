@@ -159,6 +159,7 @@ package body Spawn.Pool is
                   Command     => Args (Args'First).all,
                   Args        => Args (Args'First + 1 .. Args'Last),
                   Buffer_Size => 0);
+               pragma Debug (L.Log ("Forked manager " & Addr));
 
             exception
                when GNAT.Expect.Invalid_Process =>
@@ -228,11 +229,40 @@ package body Spawn.Pool is
 
       procedure Cleanup
       is
-         E   : Socket_Container;
-         Pos : SOMP.Cursor := Data.First;
+         E     : Socket_Container;
+         Pos   : SOMP.Cursor := Data.First;
+         Match : GNAT.Expect.Expect_Match;
       begin
          while SOMP.Has_Element (Position => Pos) loop
             E := SOMP.Element (Position => Pos);
+
+            --  Send termination signal to manager, wait max. 3 seconds for it
+            --  to comply.
+
+            GNAT.Expect.Interrupt (Descriptor => E.Pid);
+
+            begin
+               GNAT.Expect.Expect
+                 (Descriptor => E.Pid,
+                  Result     => Match,
+                  Regexp     => "",
+                  Timeout    => 3000);
+
+            exception
+               when GNAT.Expect.Process_Died =>
+                  pragma Debug (L.Log ("Manager " & To_String (E.Address)
+                    & " terminated"));
+                  GNAT.Expect.Close (Descriptor => E.Pid);
+            end;
+
+            case Match is
+               when GNAT.Expect.Expect_Timeout =>
+                  pragma Debug (L.Log ("Timeout occured, KILL manager"
+                    & " " & To_String (E.Address)));
+                  GNAT.Expect.Close (Descriptor => E.Pid);
+               when others => null;
+            end case;
+
             E.Handle.Close;
             Free (X => E.Handle);
             SOMP.Next (Position => Pos);
