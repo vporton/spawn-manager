@@ -60,7 +60,7 @@ package body Spawn.Pool is
    type Socket_Container is record
       Address   : Unbounded_String;
       Pid       : GNAT.Expect.Process_Descriptor;
-      Handle    : Socket_Handle;
+      Socket    : Socket_Handle;
       Available : Boolean;
    end record;
 
@@ -184,7 +184,7 @@ package body Spawn.Pool is
                Sockets.Insert_Socket
                  (S => (Address   => To_Unbounded_String (Addr),
                         Pid       => Pid,
-                        Handle    => Sock,
+                        Socket    => Sock,
                         Available => True));
                pragma Debug (L.Log ("Socket " & Addr & " ready"));
             end;
@@ -204,7 +204,7 @@ package body Spawn.Pool is
       pragma Debug (L.Log ("Sending request using socket "
         & To_String (Cont.Address)));
 
-      Cont.Handle.Send (Item => Request);
+      Cont.Socket.Send (Item => Request);
 
       Receive_Reponse :
       declare
@@ -212,7 +212,7 @@ package body Spawn.Pool is
          Last_Idx : Ada.Streams.Stream_Element_Offset;
          Sender   : Anet.Sockets.Socket_Addr_Type;
       begin
-         Cont.Handle.Receive (Src  => Sender,
+         Cont.Socket.Receive (Src  => Sender,
                               Item => Response,
                               Last => Last_Idx);
          Sockets.Release_Socket (C => Cont);
@@ -263,8 +263,8 @@ package body Spawn.Pool is
                when others => null;
             end case;
 
-            E.Handle.Close;
-            Free (X => E.Handle);
+            E.Socket.Close;
+            Free (X => E.Socket);
             SOMP.Next (Position => Pos);
          end loop;
 
