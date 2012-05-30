@@ -55,6 +55,7 @@ install_manager: spawn_manager
 cov:
 	@rm -f $(COVDIR)/*.gcda
 	@gnatmake -Pspawn_tests.gpr -p -XBUILD="coverage" -XBIT=$(BIT)
+	@$(OBJDIR)/spawn_manager /tmp/spawn_manager_0 &
 	@$(COVDIR)/test_runner || true
 	@lcov -c -d $(COVDIR) -o $(COVDIR)/cov.info
 	@lcov -e $(COVDIR)/cov.info "$(PWD)/src/*.adb" -o $(COVDIR)/cov.info
