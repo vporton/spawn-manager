@@ -99,10 +99,10 @@ begin
    pragma Debug (L.Init_Logfile
                  (Path => Ada.Command_Line.Argument (1) & ".log"));
    declare
-      Wrapper     : constant String := Spawn.Utils.Locate_Exec_On_Path
+      Wrapper        : constant String := Spawn.Utils.Locate_Exec_On_Path
         (Name => "spawn_wrapper");
-      Socket_Path : constant String := Ada.Command_Line.Argument (1);
-      Handler     : Spawn.Signals.Exit_Handler_Type
+      Socket_Path    : constant String := Ada.Command_Line.Argument (1);
+      Signal_Handler : Spawn.Signals.Exit_Handler_Type
         (Socket_L => Sock_Listen'Access,
          Socket_C => Sock_Comm'Access);
       pragma Unreserve_All_Interrupts;
@@ -169,7 +169,7 @@ begin
                   Command     => Wrapper,
                   Args        => Args,
                   Buffer_Size => 0);
-               Handler.Set_Running (Descriptor => Pd);
+               Signal_Handler.Set_Running (Descriptor => Pd);
                pragma Debug (L.Log_File ("Command spawned (pid"
                  & GNAT.Expect.Get_Pid (Descriptor => Pd)'Img & ")"));
 
@@ -197,7 +197,7 @@ begin
                   when others => null;
                end case;
 
-               Handler.Stopped;
+               Signal_Handler.Stopped;
 
                for A in Args'Range loop
                   GNAT.OS_Lib.Free (X => Args (A));
