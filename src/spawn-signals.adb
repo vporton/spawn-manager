@@ -49,8 +49,31 @@ package body Spawn.Signals is
          pragma Debug (L.Log_File ("Signal received - shutting down"));
          Socket_L.Close;
          Socket_C.Close;
+         if Running then
+            pragma Debug (L.Log_File ("Child with pid"
+              & GNAT.Expect.Get_Pid (Descriptor => Current_Pd)'Img
+              & " still running, closing process descriptor"));
+            GNAT.Expect.Close (Descriptor => Current_Pd);
+         end if;
          GNAT.OS_Lib.OS_Exit (Status => Integer (Ada.Command_Line.Success));
       end Handle_Signal;
+
+      ----------------------------------------------------------------------
+
+      procedure Set_Running (Descriptor : GNAT.Expect.Process_Descriptor)
+      is
+      begin
+         Running    := True;
+         Current_Pd := Descriptor;
+      end Set_Running;
+
+      ----------------------------------------------------------------------
+
+      procedure Stopped
+      is
+      begin
+         Running := False;
+      end Stopped;
 
    end Exit_Handler_Type;
 

@@ -198,6 +198,8 @@ package body Spawn.Pool is
      (Request : Ada.Streams.Stream_Element_Array)
       return Ada.Streams.Stream_Element_Array
    is
+      use type Ada.Streams.Stream_Element_Offset;
+
       Cont : Socket_Container;
    begin
       Sockets.Get_Socket (S => Cont);
@@ -215,6 +217,12 @@ package body Spawn.Pool is
          Cont.Socket.Receive (Src  => Sender,
                               Item => Response,
                               Last => Last_Idx);
+         if Last_Idx = 0 then
+            pragma Debug (L.Log ("Zero response, connection closed by peer"));
+            raise Command_Failed with "Zero response, connection closed by"
+              & " peer";
+         end if;
+
          Sockets.Release_Socket (C => Cont);
 
          return Response (Response'First .. Last_Idx);
@@ -231,7 +239,7 @@ package body Spawn.Pool is
       is
          E     : Socket_Container;
          Pos   : SOMP.Cursor := Data.First;
-         Match : GNAT.Expect.Expect_Match;
+         Match : GNAT.Expect.Expect_Match := 0;
       begin
          while SOMP.Has_Element (Position => Pos) loop
             E := SOMP.Element (Position => Pos);

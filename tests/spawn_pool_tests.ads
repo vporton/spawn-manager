@@ -48,6 +48,9 @@ package Spawn_Pool_Tests is
    procedure Execute_Complex_Command;
    --  Execute complex command.
 
+   procedure Execute_Nonterminating_Command;
+   --  Execute non-terminating command.
+
    procedure Parallel_Execution;
    --  Verify parallel command execution.
 

@@ -191,6 +191,50 @@ package body Spawn_Pool_Tests is
 
    -------------------------------------------------------------------------
 
+   procedure Execute_Nonterminating_Command
+   is
+      Got_Exception : Boolean := False;
+
+      task Executor
+      is
+         entry Start;
+      end Executor;
+
+      task body Executor
+      is
+      begin
+         accept Start;
+         Spawn.Pool.Execute ("/bin/sleep 10000");
+
+      exception
+         when Spawn.Pool.Command_Failed => Got_Exception := True;
+         when others                    => null;
+      end Executor;
+
+   begin
+      Spawn.Pool.Init;
+      Executor.Start;
+
+      delay 0.3;
+      Spawn.Pool.Cleanup;
+
+      if not Executor'Terminated then
+         abort Executor;
+      end if;
+
+      Assert (Condition => Got_Exception,
+              Message   => "Exception expected");
+
+   exception
+      when others =>
+         Spawn.Pool.Cleanup;
+         if not Executor'Terminated then
+            abort Executor;
+         end if;
+   end Execute_Nonterminating_Command;
+
+   -------------------------------------------------------------------------
+
    procedure Initialize (T : in out Testcase)
    is
    begin
@@ -207,6 +251,9 @@ package body Spawn_Pool_Tests is
       T.Add_Test_Routine
         (Routine => Execute_Complex_Command'Access,
          Name    => "Execute complex command");
+      T.Add_Test_Routine
+        (Routine => Execute_Nonterminating_Command'Access,
+         Name    => "Execute non-terminating command");
       T.Add_Test_Routine
         (Routine => Parallel_Execution'Access,
          Name    => "Parallel execution");

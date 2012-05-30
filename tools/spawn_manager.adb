@@ -106,7 +106,6 @@ begin
         (Socket_L => Sock_Listen'Access,
          Socket_C => Sock_Comm'Access);
       pragma Unreserve_All_Interrupts;
-      pragma Unreferenced (Handler);
    begin
       Sock_Listen.Bind_Unix (Path => Anet.Sockets.Unix_Path_Type
                              (Socket_Path));
@@ -148,10 +147,10 @@ begin
             declare
                Args  : GNAT.OS_Lib.Argument_List (1 .. 5);
                Pd    : GNAT.Expect.Process_Descriptor;
-               Match : GNAT.Expect.Expect_Match;
-               Cmd   : constant String := To_String (Req.Command);
-               Dir   : constant String := To_String (Req.Dir);
-               Res   : Integer         := 1;
+               Match : GNAT.Expect.Expect_Match := 0;
+               Cmd   : constant String          := To_String (Req.Command);
+               Dir   : constant String          := To_String (Req.Dir);
+               Res   : Integer                  := 1;
             begin
                if Dir'Length /= 0
                  and then Dir /= Ada.Directories.Current_Directory
@@ -170,6 +169,9 @@ begin
                   Command     => Wrapper,
                   Args        => Args,
                   Buffer_Size => 0);
+               Handler.Set_Running (Descriptor => Pd);
+               pragma Debug (L.Log_File ("Command spawned (pid"
+                 & GNAT.Expect.Get_Pid (Descriptor => Pd)'Img & ")"));
 
                begin
                   GNAT.Expect.Expect
@@ -182,13 +184,20 @@ begin
                   when GNAT.Expect.Process_Died =>
                      GNAT.Expect.Close (Descriptor => Pd,
                                         Status     => Res);
+                     pragma Debug (L.Log_File ("Command terminated (pid"
+                       & GNAT.Expect.Get_Pid (Descriptor => Pd)'Img
+                       & ", code" & Res'Img & ")"));
                end;
 
                case Match is
                   when GNAT.Expect.Expect_Timeout =>
+                     pragma Debug (L.Log_File ("Command timeout (pid"
+                       & GNAT.Expect.Get_Pid (Descriptor => Pd)'Img & ")"));
                      GNAT.Expect.Close (Descriptor => Pd);
                   when others => null;
                end case;
+
+               Handler.Stopped;
 
                for A in Args'Range loop
                   GNAT.OS_Lib.Free (X => Args (A));
