@@ -36,6 +36,7 @@ with GNAT.Expect;
 
 with Anet.Sockets;
 with Anet.Streams;
+with Anet.Util;
 
 with Spawn.Types;
 with Spawn.Logger;
@@ -148,7 +149,7 @@ package body Spawn.Pool is
          declare
             Pid  : GNAT.Expect.Process_Descriptor;
             Addr : constant String := Socket_Dir & "/" & Addr_Base
-              & Utils.Random_String (Len => 8);
+              & Anet.Util.Random_String (Len => 8);
          begin
             Args := GNAT.OS_Lib.Argument_String_To_List
               (Arg_String => Mngr_Bin & " " & Addr);

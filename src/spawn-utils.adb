@@ -29,24 +29,10 @@
 
 with Ada.Directories;
 with Ada.Environment_Variables;
-with Ada.Numerics.Discrete_Random;
-
-with Interfaces.C;
 
 with GNAT.OS_Lib;
 
 package body Spawn.Utils is
-
-   Chars : constant String := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-     & "abcdefghijklmnopqrstuvwxyz" & "0123456789";
-   subtype Chars_Range is Positive range Chars'First .. Chars'Last;
-
-   package Random_Chars is new Ada.Numerics.Discrete_Random
-     (Result_Subtype => Chars_Range);
-   Generator : Random_Chars.Generator;
-
-   function C_Getpid return Interfaces.C.int;
-   pragma Import (C, C_Getpid, "getpid");
 
    -------------------------------------------------------------------------
 
@@ -93,19 +79,6 @@ package body Spawn.Utils is
 
    -------------------------------------------------------------------------
 
-   function Random_String (Len : Positive) return String
-   is
-      Result : String (1 .. Len);
-   begin
-      for I in Result'Range loop
-         Result (I) := Chars (Random_Chars.Random (Gen => Generator));
-      end loop;
-
-      return Result;
-   end Random_String;
-
-   -------------------------------------------------------------------------
-
    procedure Wait_For_Socket
      (Path     : String;
       Timespan : Duration)
@@ -121,7 +94,4 @@ package body Spawn.Utils is
       raise Socket_Error with "Socket '" & Path & "' not available";
    end Wait_For_Socket;
 
-begin
-   Random_Chars.Reset (Gen       => Generator,
-                       Initiator => Integer (C_Getpid));
 end Spawn.Utils;

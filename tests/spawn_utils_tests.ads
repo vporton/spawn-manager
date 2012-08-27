@@ -39,9 +39,6 @@ package Spawn_Utils_Tests is
    procedure Verify_Wait_For_Socket;
    --  Test Wait_For_Socket procedure.
 
-   procedure Get_Random_Strings;
-   --  Test Random_String function.
-
    procedure Locate_Executables;
    --  Locate executables in PATH.
 

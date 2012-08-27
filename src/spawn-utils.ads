@@ -29,9 +29,6 @@
 
 package Spawn.Utils is
 
-   function Random_String (Len : Positive) return String;
-   --  Return a random string of given length.
-
    procedure Expand_Search_Path (Cmd_Path : String);
    --  Expand the search path for binaries (i.e. PATH) with the directory of
    --  the given command.
