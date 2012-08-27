@@ -40,7 +40,6 @@ with Anet.Util;
 
 with Spawn.Types;
 with Spawn.Logger;
-with Spawn.Utils;
 
 package body Spawn.Pool is
 
@@ -172,8 +171,8 @@ package body Spawn.Pool is
 
             pragma Debug (L.Log ("Waiting for socket '" & Addr
               & "' to become available"));
-            Utils.Wait_For_Socket (Path     => Addr,
-                                   Timespan => 3.0);
+            Anet.Util.Wait_For_File (Path     => Addr,
+                                     Timespan => 3.0);
 
             declare
                Sock : constant Socket_Handle := new Anet.Sockets.Socket_Type;

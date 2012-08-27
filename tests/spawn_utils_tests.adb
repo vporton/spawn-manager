@@ -41,9 +41,6 @@ package body Spawn_Utils_Tests is
    begin
       T.Set_Name (Name => "Spawn utils tests");
       T.Add_Test_Routine
-        (Routine => Verify_Wait_For_Socket'Access,
-         Name    => "Wait for sockets");
-      T.Add_Test_Routine
         (Routine => Locate_Executables'Access,
          Name    => "Locate executables in PATH");
    end Initialize;
@@ -69,20 +66,5 @@ package body Spawn_Utils_Tests is
          when Exec_Not_Found => null;
       end;
    end Locate_Executables;
-
-   -------------------------------------------------------------------------
-
-   procedure Verify_Wait_For_Socket
-   is
-   begin
-      begin
-         Wait_For_Socket (Path     => "/nonexistent/nonexistent",
-                          Timespan => 0.1);
-         Fail (Message => "Exception expected");
-
-      exception
-         when Socket_Error => null;
-      end;
-   end Verify_Wait_For_Socket;
 
 end Spawn_Utils_Tests;

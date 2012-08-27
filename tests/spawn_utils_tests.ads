@@ -36,9 +36,6 @@ package Spawn_Utils_Tests is
    procedure Initialize (T : in out Testcase);
    --  Initialize testcase.
 
-   procedure Verify_Wait_For_Socket;
-   --  Test Wait_For_Socket procedure.
-
    procedure Locate_Executables;
    --  Locate executables in PATH.
 

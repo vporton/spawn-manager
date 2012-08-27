@@ -33,13 +33,6 @@ package Spawn.Utils is
    --  Expand the search path for binaries (i.e. PATH) with the directory of
    --  the given command.
 
-   procedure Wait_For_Socket
-     (Path     : String;
-      Timespan : Duration);
-   --  This procedure waits max. the given timespan until the socket specified
-   --  by path is available. An exception is raised if the socket is not
-   --  present after the timespan has passed.
-
    function Locate_Exec_On_Path (Name : String) return String;
    --  Find given executable in environment $PATH. If the executable is not
    --  found an Exec_Not_Found exception is raised.

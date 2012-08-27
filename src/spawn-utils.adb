@@ -77,21 +77,4 @@ package body Spawn.Utils is
       end;
    end Locate_Exec_On_Path;
 
-   -------------------------------------------------------------------------
-
-   procedure Wait_For_Socket
-     (Path     : String;
-      Timespan : Duration)
-   is
-   begin
-      for L in 1 .. Positive (100 * Timespan) loop
-         if Ada.Directories.Exists (Name => Path) then
-            return;
-         end if;
-         delay Timespan / 100;
-      end loop;
-
-      raise Socket_Error with "Socket '" & Path & "' not available";
-   end Wait_For_Socket;
-
 end Spawn.Utils;
