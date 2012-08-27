@@ -70,7 +70,7 @@ package body Spawn_Manager_Tests is
                      Mode   => Anet.Sockets.Stream_Socket);
       Socket.Connect (Dst => (Family => Anet.Sockets.Family_Unix,
                               Path   => To_Unbounded_String
-                                ("/tmp/spawn_manager_0")));
+                                ("obj/spawn_manager_0")));
 
       Socket.Send (Item => Invalid1);
       declare

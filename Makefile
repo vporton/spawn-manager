@@ -15,7 +15,7 @@ spawn_tests:
 	@gnatmake -P$@ -p
 
 tests: spawn_tests spawn_manager
-	@$(OBJDIR)/spawn_manager /tmp/spawn_manager_0 &
+	@$(OBJDIR)/spawn_manager $(OBJDIR)/spawn_manager_0 &
 	@$(OBJDIR)/test_runner
 
 spawn_manager: $(OBJDIR)/spawn_wrapper
@@ -55,7 +55,7 @@ install_manager: spawn_manager
 cov:
 	@rm -f $(COVDIR)/*.gcda
 	@gnatmake -Pspawn_tests.gpr -p -XBUILD="coverage" -XBIT=$(BIT)
-	@$(OBJDIR)/spawn_manager /tmp/spawn_manager_0 &
+	@$(OBJDIR)/spawn_manager $(OBJDIR)/spawn_manager_0 &
 	@$(COVDIR)/test_runner || true
 	@lcov -c -d $(COVDIR) -o $(COVDIR)/cov.info
 	@lcov -e $(COVDIR)/cov.info "$(PWD)/src/*.adb" -o $(COVDIR)/cov.info
