@@ -36,7 +36,7 @@ with Ada.Exceptions;
 with GNAT.OS_Lib;
 with GNAT.Expect;
 
-with Anet.Sockets;
+with Anet.Sockets.Unix;
 with Anet.Streams;
 
 with Spawn.Types;
@@ -57,7 +57,7 @@ is
 
    Shell : constant String := "/bin/bash";
 
-   Sock_Listen, Sock_Comm : aliased Anet.Sockets.Socket_Type;
+   Sock_Listen, Sock_Comm : aliased Anet.Sockets.Unix.TCP_Socket_Type;
 
    Stream : aliased Anet.Streams.Memory_Stream_Type (Max_Elements => 8192);
    --  In-memory stream used for request/response serialization.
@@ -83,7 +83,7 @@ begin
       return;
    end if;
 
-   if not Anet.Sockets.Is_Valid_Unix
+   if not Anet.Sockets.Unix.Is_Valid
      (Path => Ada.Command_Line.Argument (1))
    then
       Ada.Command_Line.Set_Exit_Status (Code => Ada.Command_Line.Failure);
@@ -93,8 +93,7 @@ begin
    Spawn.Utils.Expand_Search_Path
      (Cmd_Path => Ada.Command_Line.Command_Name);
 
-   Sock_Listen.Create (Family => Anet.Sockets.Family_Unix,
-                       Mode   => Anet.Sockets.Stream_Socket);
+   Sock_Listen.Init;
 
    pragma Debug (L.Init_Logfile
                  (Path => Ada.Command_Line.Argument (1) & ".log"));
@@ -107,8 +106,7 @@ begin
          Socket_C => Sock_Comm'Access);
       pragma Unreserve_All_Interrupts;
    begin
-      Sock_Listen.Bind_Unix (Path => Anet.Sockets.Unix_Path_Type
-                             (Socket_Path));
+      Sock_Listen.Bind (Path => Anet.Sockets.Unix.Path_Type (Socket_Path));
       pragma Debug (L.Log_File ("Listening on socket " & Socket_Path));
       Sock_Listen.Listen;
 
@@ -123,11 +121,9 @@ begin
             Buffer   : Ada.Streams.Stream_Element_Array (1 .. 8192);
             Last_Idx : Ada.Streams.Stream_Element_Offset;
             Req      : Spawn.Types.Data_Type;
-            Sender   : Anet.Sockets.Socket_Addr_Type;
          begin
             pragma Debug (L.Log_File ("Waiting for data"));
-            Sock_Comm.Receive (Src  => Sender,
-                               Item => Buffer,
+            Sock_Comm.Receive (Item => Buffer,
                                Last => Last_Idx);
 
             pragma Debug (L.Log_File ("Received" & Last_Idx'Img & " byte(s)"));

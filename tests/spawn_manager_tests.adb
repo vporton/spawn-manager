@@ -30,7 +30,7 @@
 with Ada.Streams;
 with Ada.Strings.Unbounded;
 
-with Anet.Sockets;
+with Anet.Sockets.Unix;
 with Anet.Streams;
 
 with Spawn.Types;
@@ -59,28 +59,23 @@ package body Spawn_Manager_Tests is
       use Ada.Streams;
 
       Stream   : aliased Anet.Streams.Memory_Stream_Type (Max_Elements => 32);
-      Socket   : Anet.Sockets.Socket_Type;
+      Socket   : Anet.Sockets.Unix.TCP_Socket_Type;
       Invalid1 : constant Stream_Element_Array (1 .. 9) := (others => 16#ac#);
       Invalid2 : constant Stream_Element_Array (1 .. 2) := (others => 234);
       Req      : constant Types.Data_Type
         := (Command => To_Unbounded_String ("/bin/true"),
             others  => <>);
    begin
-      Socket.Create (Family => Anet.Sockets.Family_Unix,
-                     Mode   => Anet.Sockets.Stream_Socket);
-      Socket.Connect (Dst => (Family => Anet.Sockets.Family_Unix,
-                              Path   => To_Unbounded_String
-                                ("obj/spawn_manager_0")));
+      Socket.Init;
+      Socket.Connect (Path => "obj/spawn_manager_0");
 
       Socket.Send (Item => Invalid1);
       declare
          Data     : Stream_Element_Array (1 .. 128);
          Last_Idx : Stream_Element_Offset;
-         Sender   : Anet.Sockets.Socket_Addr_Type;
          Response : Types.Data_Type;
       begin
-         Socket.Receive (Src  => Sender,
-                         Item => Data,
+         Socket.Receive (Item => Data,
                          Last => Last_Idx);
 
          Stream.Set_Buffer (Buffer => Data (Data'First .. Last_Idx));
@@ -93,11 +88,9 @@ package body Spawn_Manager_Tests is
       declare
          Data     : Stream_Element_Array (1 .. 128);
          Last_Idx : Stream_Element_Offset;
-         Sender   : Anet.Sockets.Socket_Addr_Type;
          Response : Types.Data_Type;
       begin
-         Socket.Receive (Src  => Sender,
-                         Item => Data,
+         Socket.Receive (Item => Data,
                          Last => Last_Idx);
 
          Stream.Set_Buffer (Buffer => Data (Data'First .. Last_Idx));
@@ -112,11 +105,9 @@ package body Spawn_Manager_Tests is
       declare
          Data     : Stream_Element_Array (1 .. 128);
          Last_Idx : Stream_Element_Offset;
-         Sender   : Anet.Sockets.Socket_Addr_Type;
          Response : Types.Data_Type;
       begin
-         Socket.Receive (Src  => Sender,
-                         Item => Data,
+         Socket.Receive (Item => Data,
                          Last => Last_Idx);
 
          Stream.Set_Buffer (Buffer => Data (Data'First .. Last_Idx));

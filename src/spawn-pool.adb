@@ -34,7 +34,7 @@ with Ada.Unchecked_Deallocation;
 with GNAT.OS_Lib;
 with GNAT.Expect;
 
-with Anet.Sockets;
+with Anet.Sockets.Unix;
 with Anet.Streams;
 with Anet.Util;
 
@@ -50,10 +50,10 @@ package body Spawn.Pool is
 
    package L renames Spawn.Logger;
 
-   type Socket_Handle is access Anet.Sockets.Socket_Type;
+   type Socket_Handle is access Anet.Sockets.Unix.TCP_Socket_Type;
 
    procedure Free is new Ada.Unchecked_Deallocation
-     (Object => Anet.Sockets.Socket_Type,
+     (Object => Anet.Sockets.Unix.TCP_Socket_Type,
       Name   => Socket_Handle);
    --  Free allocated socket memory.
 
@@ -175,12 +175,11 @@ package body Spawn.Pool is
                                      Timespan => 3.0);
 
             declare
-               Sock : constant Socket_Handle := new Anet.Sockets.Socket_Type;
+               Sock : constant Socket_Handle
+                 := new Anet.Sockets.Unix.TCP_Socket_Type;
             begin
-               Sock.Create (Family => Anet.Sockets.Family_Unix,
-                            Mode   => Anet.Sockets.Stream_Socket);
-               Sock.Connect (Dst => (Family => Anet.Sockets.Family_Unix,
-                                     Path   => To_Unbounded_String (Addr)));
+               Sock.Init;
+               Sock.Connect (Path => Anet.Sockets.Unix.Path_Type (Addr));
                Sockets.Insert_Socket
                  (S => (Address   => To_Unbounded_String (Addr),
                         Pid       => Pid,
@@ -212,10 +211,8 @@ package body Spawn.Pool is
       declare
          Response : Ada.Streams.Stream_Element_Array (1 .. 32);
          Last_Idx : Ada.Streams.Stream_Element_Offset;
-         Sender   : Anet.Sockets.Socket_Addr_Type;
       begin
-         Cont.Socket.Receive (Src  => Sender,
-                              Item => Response,
+         Cont.Socket.Receive (Item => Response,
                               Last => Last_Idx);
          if Last_Idx = 0 then
             pragma Debug (L.Log ("Zero response, connection closed by peer"));
