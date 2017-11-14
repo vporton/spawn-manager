@@ -28,8 +28,7 @@ package body Spawn.Spawner is
          when 0 =>
             --  FIXME: Shall we support shell semantics of use plain execvp()?
             declare
-               Cmd : aliased char_array :=
-                 To_C (Command);
+               Cmd : aliased char_array := To_C (Command);
                R : constant int :=
                  execv (To_C ("/bin/sh"),
                         (1 => To_Chars_Ptr (Cmd'Unchecked_Access)));
