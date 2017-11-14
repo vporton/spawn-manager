@@ -13,3 +13,6 @@ http://www.dmitry-kazakov.de/ada/components.htm#Storage_Streams
 https://github.com/sparre/black
 stream_buffers-simple_unbounded.ads package at dequesterity.sourceforge.net
 https://github.com/persan/a-stream-tools
+
+Combine waitpid() and select():
+https://stackoverflow.com/q/29245397/856090
