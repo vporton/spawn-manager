@@ -1,7 +1,7 @@
 --
 --  Process Spawn Manager
 --
---  Copyright (C) 2012 Reto Buerki <reet@codelabs.ch>
+--  Copyright (C) 2017 Victor Porton <porton@narod.ru>
 --  Copyright (C) 2012 secunet Security Networks AG
 --
 --  This program is free software; you can redistribute it and/or
@@ -27,41 +27,26 @@
 --  executable file might be covered by the GNU Public License.
 --
 
-with Ada.Directories;
-with Ada.Streams;
+with GNAT.OS_Lib;
 
-with Spawn.Spawner;
+package Spawn.Spawner is
 
-package Spawn.Pool is
+   Command_Failed : exception;
 
-   procedure Init
-     (Manager_Count : Positive := 1;
-      Socket_Dir    : String   := "/tmp");
-   --  Init pool with given number of spawn managers. The Socket_Dir argument
-   --  specifies the directory used to store spawn_manager communication
-   --  sockets.
+   --  TODO: Non-portable!
+   type Process_Id is new Integer;
+   Invalid_Pid : constant Process_Id := -1;
 
-   procedure Execute
-     (Command   : String;
-      Directory : String  := Ada.Directories.Current_Directory;
-      Timeout   : Integer := -1);
-   --  Execute command in given directory. The Timeout parameter specifies the
-   --  time in milliseconds after the command times out (the default is no
-   --  timeout (-1)). If a timeout occurs, a Command_Failed exception is raised
-   --  to indicate failure.
+   --  TODO: Make private
+   type Process_Descriptor is tagged record
+      Pid              : Process_Id := Invalid_Pid;
+      Input_Fd         : GNAT.OS_Lib.File_Descriptor := GNAT.OS_Lib.Invalid_FD;
+      Output_Fd        : GNAT.OS_Lib.File_Descriptor := GNAT.OS_Lib.Invalid_FD;
+--  Error_Fd         : GNAT.OS_Lib.File_Descriptor := GNAT.OS_Lib.Invalid_FD;
+   end record;
 
-   procedure Cleanup;
-   --  Cleanup spawn pool.
+   procedure Non_Blocking_Spawn
+     (Descriptor  : out Process_Descriptor'Class;
+      Command     : String);
 
-   Pool_Error     : exception;
-   Command_Failed : exception renames Spawn.Spawner.Command_Failed;
-
-private
-
-   function Send_Receive
-     (Request : Ada.Streams.Stream_Element_Array)
-      return Ada.Streams.Stream_Element_Array;
-   --  Send given data as request to spawn manager. Return data of received
-   --  reply.
-
-end Spawn.Pool;
+end Spawn.Spawner;
