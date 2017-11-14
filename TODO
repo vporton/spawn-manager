@@ -6,3 +6,7 @@
   The buffer of the string stream should be wrapped with a higher level
   packet, because it may be read as more than one recv() operation.
   Then implement asynchronous(?) communication with child process.
+
+Also:
+
+http://www.dmitry-kazakov.de/ada/components.htm#Storage_Streams
