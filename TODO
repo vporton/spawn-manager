@@ -7,6 +7,9 @@
   packet, because it may be read as more than one recv() operation.
   Then implement asynchronous(?) communication with child process.
 
-Also:
+Unbounded in-memory streams (choose one):
 
 http://www.dmitry-kazakov.de/ada/components.htm#Storage_Streams
+https://github.com/sparre/black
+stream_buffers-simple_unbounded.ads package at dequesterity.sourceforge.net
+https://github.com/persan/a-stream-tools
