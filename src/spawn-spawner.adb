@@ -67,17 +67,12 @@ package body Spawn.Spawner is
       return Descriptor.Pid;
    end Get_Pid;
 
-   -- FIXME: remove
-   procedure perror (s : char_array);
-   pragma Import (C, perror);
-
    procedure Non_Blocking_Spawn
      (Descriptor  : out Process_Descriptor'Class;
       Command     : String)
    is
       Pid : constant Process_Id := fork;
    begin
-      perror("XXX"); --  FIXME: remove
       case Pid is
          when 0 =>
             --  FIXME: Shall we support shell semantics of use plain execvp()?
@@ -94,7 +89,6 @@ package body Spawn.Spawner is
                          3 => Null_Ptr));
                pragma Unreferenced (R);
             begin
-               perror("YYY"); --  FIXME: remove
                raise Command_Failed with "Cannot exec shell"; --  TODO
             end;
          when -1 =>
