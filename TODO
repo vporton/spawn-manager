@@ -1,7 +1,3 @@
-* Rewrite without GNAT.Expect (1. to increase portability; 2. to use fork()
-  directly because we need to dup2() stdin/stdout in child process; 3. to
-  increase performance). Regular Spawn does not do this.
-
 * Use some unbounded string stream (where to get? write a new one?)
   The buffer of the string stream should be wrapped with a higher level
   packet, because it may be read as more than one recv() operation.

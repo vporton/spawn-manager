@@ -1,0 +1,32 @@
+This is the Victor Porton's <porton@narod.ru> fork of Ada Spawn Manager,
+original version by Reto Buerki <reet@codelabs.ch> from Security Networks AG.
+
+The primary reason Victor forked it, is that he needs to pass a value to
+stdin and reap the stdout output.
+
+This version is not yet a release. This fork is not useful yet.
+
+Victor Porton's version is currently supporting only Unix-like systems.
+(Testing is done on Linux only.)
+
+Victor Porton eliminated dependency on GNAT.Expect library.
+This version is planned to be rewritten using fork() and dup2() Unix calls.
+(1. to increase portability; 2. to use fork() directly because we need to
+dup2() stdin/stdout in child process; 3. to increase performance)
+
+We need to handle both reaping of exited child and polling pipes which
+connect spawn_manager executable with invoked processes. To do this
+we first register a SIGCHLD handler which writes one byte to a specially
+allocated pair of pipes through which spawn_manager communicates with itself
+(unlike other pairs of pipes through which spawn_manager communicates with
+childs). Both kinds of pipes are watched by poll() system call. So we are
+notified both about pipe events and about deceased childs.
+
+Using this approach we use poll() do NOT need Linux specific ppoll(), because
+we will be notified about SIGCHLD in any case (either before or after EINTR
+error). See also http://250bpm.com/blog:12 about the problem with poll().
+
+CREDITS:
+
+The approach to send one byte from SIGCHLD handler was taken from:
+https://stackoverflow.com/a/29245438/856090
