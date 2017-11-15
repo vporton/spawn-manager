@@ -59,7 +59,7 @@ package body Spawn.Pool is
 
    type Socket_Container is record
       Address   : Unbounded_String;
-      Pid       : GNAT.Expect.Process_Descriptor;
+      Pid       : Spawn.Spawner.Process_Descriptor;
       Socket    : Socket_Handle;
       Available : Boolean;
    end record;
@@ -133,8 +133,6 @@ package body Spawn.Pool is
       Socket_Dir    : String   := "/tmp")
    is
       use type GNAT.OS_Lib.Process_Id;
-
-      Args : GNAT.OS_Lib.Argument_List_Access;
    begin
 
       --  Check if socket directory exists
@@ -146,28 +144,21 @@ package body Spawn.Pool is
 
       for M in 1 .. Manager_Count loop
          declare
-            Pid  : GNAT.Expect.Process_Descriptor;
+            Pid  : Spawn.Spawner.Process_Descriptor;
             Addr : constant String := Socket_Dir & "/" & Addr_Base
               & Anet.Util.Random_String (Len => 8);
          begin
-            Args := GNAT.OS_Lib.Argument_String_To_List
-              (Arg_String => Mngr_Bin & " " & Addr);
-
             begin
-               GNAT.Expect.Non_Blocking_Spawn
+               Spawn.Spawner.Non_Blocking_Spawn
                  (Descriptor  => Pid,
-                  Command     => Args (Args'First).all,
-                  Args        => Args (Args'First + 1 .. Args'Last),
-                  Buffer_Size => 0);
+                  Command     => Mngr_Bin & " " & Addr);
                pragma Debug (L.Log ("Forked manager " & Addr));
-
-            exception
-               when GNAT.Expect.Invalid_Process =>
-                  GNAT.OS_Lib.Free (Args);
-                  raise Command_Failed with "Unable to fork " & Mngr_Bin;
+               --  TODO: Handle failure
+--              exception
+--                 when GNAT.Expect.Invalid_Process =>
+--                    GNAT.OS_Lib.Free (Args);
+--                    raise Command_Failed with "Unable to fork " & Mngr_Bin;
             end;
-
-            GNAT.OS_Lib.Free (Args);
 
             pragma Debug (L.Log ("Waiting for socket '" & Addr
               & "' to become available"));
@@ -236,37 +227,19 @@ package body Spawn.Pool is
       is
          E     : Socket_Container;
          Pos   : SOMP.Cursor := Data.First;
-         Match : GNAT.Expect.Expect_Match := 0;
+         Match : GNAT.Expect.Expect_Match := 0; --  FIXME: remove this argument
       begin
+         pragma Unreferenced (Match);
+
          while SOMP.Has_Element (Position => Pos) loop
             E := SOMP.Element (Position => Pos);
 
             --  Send termination signal to manager, wait max. 3 seconds for it
             --  to comply.
 
-            GNAT.Expect.Interrupt (Descriptor => E.Pid);
+            Spawn.Spawner.Close (Descriptor => E.Pid);
 
-            begin
-               GNAT.Expect.Expect
-                 (Descriptor => E.Pid,
-                  Result     => Match,
-                  Regexp     => "",
-                  Timeout    => 3000);
-
-            exception
-               when GNAT.Expect.Process_Died =>
-                  pragma Debug (L.Log ("Manager " & To_String (E.Address)
-                    & " terminated"));
-                  GNAT.Expect.Close (Descriptor => E.Pid);
-            end;
-
-            case Match is
-               when GNAT.Expect.Expect_Timeout =>
-                  pragma Debug (L.Log ("Timeout occured, KILL manager"
-                    & " " & To_String (E.Address)));
-                  GNAT.Expect.Close (Descriptor => E.Pid);
-               when others => null;
-            end case;
+            --  TODO: Wait for stalled processes (to kill them with SIGKILL)
 
             E.Socket.Close;
             Free (X => E.Socket);

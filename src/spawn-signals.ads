@@ -29,7 +29,7 @@
 
 with Ada.Interrupts.Names;
 
-with GNAT.Expect;
+with Spawn.Spawner;
 
 with Anet.Sockets.Unix;
 
@@ -39,7 +39,7 @@ package Spawn.Signals is
      (Socket_L : access Anet.Sockets.Unix.TCP_Socket_Type;
       Socket_C : access Anet.Sockets.Unix.TCP_Socket_Type)
    is
-      procedure Set_Running (Descriptor : GNAT.Expect.Process_Descriptor);
+      procedure Set_Running (Descriptor : Spawn.Spawner.Process_Descriptor);
       --  Indicate that a child process with given pid is currently running and
       --  must be terminated before exiting to OS.
 
@@ -52,7 +52,7 @@ package Spawn.Signals is
       pragma Attach_Handler (Handle_Signal, Ada.Interrupts.Names.SIGTERM);
 
       Running    : Boolean := False;
-      Current_Pd : GNAT.Expect.Process_Descriptor;
+      Current_Pd : Spawn.Spawner.Process_Descriptor;
    end Exit_Handler_Type;
    --  Handler used to perform cleanup and exit to OS on SIGTERM and SIGINT
    --  signals.
