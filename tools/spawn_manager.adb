@@ -159,6 +159,8 @@ begin
                     (Descriptor => Pd,
                      Command    => Full_Cmd);
                end;
+
+               --  FIXME: What is it?
                Signal_Handler.Set_Running (Descriptor => Pd);
                pragma Debug (L.Log_File ("Command spawned (pid"
                              & Spawn.Spawner.Get_Pid (Pd)'Img & ")"));
