@@ -18,3 +18,6 @@ https://github.com/persan/a-stream-tools
 
 Combine waitpid() and select():
 https://stackoverflow.com/q/29245397/856090
+
+select()/pselect()/poll()/ppoll()?
+http://250bpm.com/blog:12
