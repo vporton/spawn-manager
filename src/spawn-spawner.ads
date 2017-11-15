@@ -49,4 +49,11 @@ package Spawn.Spawner is
      (Descriptor  : out Process_Descriptor'Class;
       Command     : String);
 
+   function Get_Pid
+     (Descriptor : Process_Descriptor)
+      return       Process_Id;
+
+   procedure Close
+     (Descriptor : in out Process_Descriptor);
+
 end Spawn.Spawner;

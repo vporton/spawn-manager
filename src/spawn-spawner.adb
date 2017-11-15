@@ -47,6 +47,26 @@ package body Spawn.Spawner is
                    return int;
    pragma Import (C, execv);
 
+   procedure Kill (Pid : Process_Id; Sig_Num : Integer);
+   pragma Import (C, Kill);
+
+   procedure Close
+     (Descriptor : in out Process_Descriptor)
+   is
+   begin
+      --  TODO: Close file descriptors
+      Kill (Descriptor.Pid, 15); --  TODO: SIGTERM portably
+      --  TODO: SIGKILL after a timeout
+   end Close;
+
+   function Get_Pid
+     (Descriptor : Process_Descriptor)
+      return       Process_Id
+   is
+   begin
+      return Descriptor.Pid;
+   end Get_Pid;
+
    procedure Non_Blocking_Spawn
      (Descriptor  : out Process_Descriptor'Class;
       Command     : String)
