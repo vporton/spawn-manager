@@ -33,7 +33,7 @@ with Ada.Directories;
 with Ada.Streams;
 with Ada.Exceptions;
 
-with GNAT.Expect, Spawn.Spawner;
+with Spawn.Spawner;
 
 with Anet.Sockets.Unix;
 with Anet.Streams;
@@ -141,12 +141,9 @@ begin
 
             declare
                Pd    : Spawn.Spawner.Process_Descriptor;
-               Match : GNAT.Expect.Expect_Match := 0; --  TODO: remove
                Cmd   : constant String          := To_String (Req.Command);
                Dir   : constant String          := To_String (Req.Dir);
             begin
-               pragma Unreferenced (Match);
-
                if Dir'Length /= 0
                  and then Dir /= Ada.Directories.Current_Directory
                then

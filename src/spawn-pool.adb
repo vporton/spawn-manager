@@ -32,7 +32,6 @@ with Ada.Strings.Unbounded;
 with Ada.Unchecked_Deallocation;
 
 with GNAT.OS_Lib;
-with GNAT.Expect;
 
 with Anet.Sockets.Unix;
 with Anet.Streams;
@@ -227,10 +226,7 @@ package body Spawn.Pool is
       is
          E     : Socket_Container;
          Pos   : SOMP.Cursor := Data.First;
-         Match : GNAT.Expect.Expect_Match := 0; --  FIXME: remove this argument
       begin
-         pragma Unreferenced (Match);
-
          while SOMP.Has_Element (Position => Pos) loop
             E := SOMP.Element (Position => Pos);
 
