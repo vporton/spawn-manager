@@ -43,7 +43,7 @@ package body Spawn.Spawner is
      chars_ptr;
    pragma Convention (C, C_Cmd_Args);
 
-   function execv (File : char_array; Args : C_Cmd_Args)
+   function execv (File : chars_ptr; Args : C_Cmd_Args)
                    return int;
    pragma Import (C, execv);
 
@@ -77,11 +77,14 @@ package body Spawn.Spawner is
          when 0 =>
             --  FIXME: Shall we support shell semantics of use plain execvp()?
             declare
-               Cmd   : aliased char_array := To_C (Command);
+               Shell : aliased char_array := To_C ("/bin/sh");
                CFlag : aliased char_array := To_C ("-c");
+               Cmd   : aliased char_array := To_C (Command);
+               Shell2 : chars_ptr := To_Chars_Ptr (Shell'Unchecked_Access);
                R : constant int :=
-                 execv (To_C ("/bin/sh"),
-                        (1 => To_Chars_Ptr (CFlag'Unchecked_Access),
+                 execv (Shell2,
+                        (0 => Shell2,
+                         1 => To_Chars_Ptr (CFlag'Unchecked_Access),
                          2 => To_Chars_Ptr (Cmd'Unchecked_Access)));
                pragma Unreferenced (R);
             begin
