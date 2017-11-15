@@ -77,10 +77,12 @@ package body Spawn.Spawner is
          when 0 =>
             --  FIXME: Shall we support shell semantics of use plain execvp()?
             declare
-               Cmd : aliased char_array := To_C (Command);
+               Cmd   : aliased char_array := To_C (Command);
+               CFlag : aliased char_array := To_C ("-c");
                R : constant int :=
                  execv (To_C ("/bin/sh"),
-                        (1 => To_Chars_Ptr (Cmd'Unchecked_Access)));
+                        (1 => To_Chars_Ptr (CFlag'Unchecked_Access),
+                         2 => To_Chars_Ptr (Cmd'Unchecked_Access)));
                pragma Unreferenced (R);
             begin
                raise Command_Failed with "Cannot exec shell"; --  TODO
