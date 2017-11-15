@@ -77,6 +77,7 @@ package body Spawn.Spawner is
          when 0 =>
             --  FIXME: Shall we support shell semantics of use plain execvp()?
             declare
+               --  TODO: Use the same Shell as in Spawn_Manager
                Shell : aliased char_array := To_C ("/bin/sh");
                CFlag : aliased char_array := To_C ("-c");
                Cmd   : aliased char_array := To_C (Command);
