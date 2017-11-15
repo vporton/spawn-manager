@@ -156,7 +156,7 @@ begin
                --  TODO
                declare
                   Full_Cmd : constant String :=
-                    Wrapper & " " & Shell & " -o pipefail -c" & Cmd;
+                    Wrapper & " " & Shell & " -o pipefail -c " & Cmd;
                begin
                   Spawn.Spawner.Non_Blocking_Spawn
                     (Descriptor => Pd,
