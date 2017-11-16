@@ -68,6 +68,7 @@ package body Spawn.Pool is
       Element_Type => Socket_Container);
    package SOMP renames Socket_Map_Package;
 
+   --  TODO: No need for protected, can be simplified
    protected Sockets
    is
       procedure Insert_Socket (S : Socket_Container);

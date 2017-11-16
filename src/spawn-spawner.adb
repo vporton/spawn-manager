@@ -81,7 +81,8 @@ package body Spawn.Spawner is
                Shell : aliased char_array := To_C ("/bin/sh");
                CFlag : aliased char_array := To_C ("-c");
                Cmd   : aliased char_array := To_C (Command);
-               Shell2 : chars_ptr := To_Chars_Ptr (Shell'Unchecked_Access);
+               Shell2 : constant chars_ptr
+                 := To_Chars_Ptr (Shell'Unchecked_Access);
                R : constant int :=
                  execv (Shell2,
                         (0 => Shell2,

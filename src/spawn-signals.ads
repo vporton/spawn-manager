@@ -29,31 +29,16 @@
 
 with Ada.Interrupts.Names;
 
-with Spawn.Spawner;
-
-with Anet.Sockets.Unix;
-
 package Spawn.Signals is
 
-   protected type Exit_Handler_Type
-     (Socket_L : access Anet.Sockets.Unix.TCP_Socket_Type;
-      Socket_C : access Anet.Sockets.Unix.TCP_Socket_Type)
+   protected type Signal_Handler_Type
    is
-      procedure Set_Running (Descriptor : Spawn.Spawner.Process_Descriptor);
-      --  Indicate that a child process with given pid is currently running and
-      --  must be terminated before exiting to OS.
-
-      procedure Stopped;
-      --  Indicate that no child is currently running.
-
    private
       procedure Handle_Signal;
+      pragma Attach_Handler (Handle_Signal, Ada.Interrupts.Names.SIGCHLD);
       pragma Attach_Handler (Handle_Signal, Ada.Interrupts.Names.SIGINT);
       pragma Attach_Handler (Handle_Signal, Ada.Interrupts.Names.SIGTERM);
-
-      Running    : Boolean := False;
-      Current_Pd : Spawn.Spawner.Process_Descriptor;
-   end Exit_Handler_Type;
+   end Signal_Handler_Type;
    --  Handler used to perform cleanup and exit to OS on SIGTERM and SIGINT
    --  signals.
 

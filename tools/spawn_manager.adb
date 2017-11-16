@@ -41,7 +41,6 @@ with Anet.Streams;
 with Spawn.Types;
 with Spawn.Utils;
 with Spawn.Logger;
-with Spawn.Signals;
 
 procedure Spawn_Manager
 is
@@ -100,10 +99,7 @@ begin
       Wrapper        : constant String := Spawn.Utils.Locate_Exec_On_Path
         (Name => "spawn_wrapper");
       Socket_Path    : constant String := Ada.Command_Line.Argument (1);
-      Signal_Handler : Spawn.Signals.Exit_Handler_Type
-        (Socket_L => Sock_Listen'Access,
-         Socket_C => Sock_Comm'Access);
-      pragma Unreserve_All_Interrupts;
+      pragma Unreserve_All_Interrupts; --  FIXME: Move to the correct place
    begin
       Sock_Listen.Bind (Path => Anet.Sockets.Unix.Path_Type (Socket_Path));
       pragma Debug (L.Log_File ("Listening on socket " & Socket_Path));
@@ -160,14 +156,10 @@ begin
                      Command    => Full_Cmd);
                end;
 
-               --  FIXME: What is it?
-               Signal_Handler.Set_Running (Descriptor => Pd);
                pragma Debug (L.Log_File ("Command spawned (pid"
                              & Spawn.Spawner.Get_Pid (Pd)'Img & ")"));
 
                --  TODO: timeout
-
-               Signal_Handler.Stopped;
 
                --  FIXME
                --  Send_Reply (Success => Res = 0);

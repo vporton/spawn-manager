@@ -27,9 +27,7 @@
 --  executable file might be covered by the GNU Public License.
 --
 
-with Ada.Command_Line;
-
-with GNAT.OS_Lib;
+--  with GNAT.OS_Lib;
 
 with Spawn.Logger;
 
@@ -39,42 +37,17 @@ package body Spawn.Signals is
 
    -------------------------------------------------------------------------
 
-   protected body Exit_Handler_Type
+   protected body Signal_Handler_Type
    is
       ----------------------------------------------------------------------
 
       procedure Handle_Signal
       is
       begin
-         pragma Debug (L.Log_File ("Signal received - shutting down"));
-         Socket_L.Close;
-         Socket_C.Close;
-         if Running then
-            pragma Debug (L.Log_File ("Child with pid"
-              & Spawn.Spawner.Get_Pid (Descriptor => Current_Pd)'Img
-              & " still running, closing process descriptor"));
-            Spawn.Spawner.Close (Descriptor => Current_Pd);
-         end if;
-         GNAT.OS_Lib.OS_Exit (Status => Integer (Ada.Command_Line.Success));
+         pragma Debug (L.Log_File ("Signal received"));
+         null;
       end Handle_Signal;
 
-      ----------------------------------------------------------------------
-
-      procedure Set_Running (Descriptor : Spawn.Spawner.Process_Descriptor)
-      is
-      begin
-         Running    := True;
-         Current_Pd := Descriptor;
-      end Set_Running;
-
-      ----------------------------------------------------------------------
-
-      procedure Stopped
-      is
-      begin
-         Running := False;
-      end Stopped;
-
-   end Exit_Handler_Type;
+   end Signal_Handler_Type;
 
 end Spawn.Signals;
