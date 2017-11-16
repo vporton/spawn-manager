@@ -26,6 +26,9 @@ Using this approach we use poll() do NOT need Linux specific ppoll(), because
 we will be notified about SIGCHLD in any case (either before or after EINTR
 error). See also http://250bpm.com/blog:12 about the problem with poll().
 
+We can also handle SIGTERM and SIGINT in the same way (but sending a different
+byte through the pair of pipes to differentiate between different signals).
+
 CREDITS:
 
 The approach to send one byte from SIGCHLD handler was taken from:
