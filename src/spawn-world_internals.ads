@@ -27,21 +27,22 @@
 --  executable file might be covered by the GNU Public License.
 --
 
-with Ada.Interrupts.Names;
+with Interfaces.C;
 
-package Spawn.Signals is
+with Spawn.Signals;
 
-   protected type Signal_Handler_Type
-   is
-   private
-      procedure Handle_Signal;
-      pragma Attach_Handler (Handle_Signal, Ada.Interrupts.Names.SIGCHLD);
-      pragma Attach_Handler (Handle_Signal, Ada.Interrupts.Names.SIGINT);
-      pragma Attach_Handler (Handle_Signal, Ada.Interrupts.Names.SIGTERM);
-   end Signal_Handler_Type;
-   --  Handler used to perform cleanup and exit to OS on SIGTERM and SIGINT
-   --  signals.
+package Spawn.World_Internals is
 
-   type Signal_Handler_Access is access Spawn.Signals.Signal_Handler_Type;
+   --  TODO: Move global variables into this object
+   type World_Internals_Type is
+      record
+--           Self_Communication_Write : GNAT.OS_Lib.File_Descriptor;
+--           Self_Communication_Read  : GNAT.OS_Lib.File_Descriptor;
+         Self_Communication_Write : Interfaces.C.int;
+         Self_Communication_Read  : Interfaces.C.int;
+         Signal_Handler : Spawn.Signals.Signal_Handler_Access;
+      end record;
 
-end Spawn.Signals;
+   World : World_Internals_Type;
+
+end Spawn.World_Internals;

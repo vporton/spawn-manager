@@ -27,21 +27,25 @@
 --  executable file might be covered by the GNU Public License.
 --
 
-with Ada.Interrupts.Names;
+--  Internals
 
-package Spawn.Signals is
+with Interfaces.C; use Interfaces.C;
 
-   protected type Signal_Handler_Type
-   is
-   private
-      procedure Handle_Signal;
-      pragma Attach_Handler (Handle_Signal, Ada.Interrupts.Names.SIGCHLD);
-      pragma Attach_Handler (Handle_Signal, Ada.Interrupts.Names.SIGINT);
-      pragma Attach_Handler (Handle_Signal, Ada.Interrupts.Names.SIGTERM);
-   end Signal_Handler_Type;
-   --  Handler used to perform cleanup and exit to OS on SIGTERM and SIGINT
-   --  signals.
+package Spawn.OS is
 
-   type Signal_Handler_Access is access Spawn.Signals.Signal_Handler_Type;
+   subtype ssize_t  is size_t; -- C ssize_t type
 
-end Spawn.Signals;
+   function write (file : int; b : in out char_array; length : size_t)
+                   return ssize_t;
+   pragma Import (C, write);
+
+   function close (FD : int) return int;
+   pragma Import (C, close);
+
+   type Two_FDs is array (0 .. 1) of int;
+   pragma Convention (C, Two_FDs);
+
+   function pipe (FDs : out Two_FDs) return int;
+   pragma Import (C, pipe);
+
+end Spawn.OS;

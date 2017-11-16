@@ -27,13 +27,21 @@
 --  executable file might be covered by the GNU Public License.
 --
 
+with Interfaces.C;
+
 --  with GNAT.OS_Lib;
 
+with Spawn.OS;
+with Spawn.World_Internals;
 with Spawn.Logger;
+with Spawn.Pool;
 
 package body Spawn.Signals is
 
    package L renames Spawn.Logger;
+
+   World : Spawn.World_Internals.World_Internals_Type renames
+     Spawn.World_Internals.World;
 
    -------------------------------------------------------------------------
 
@@ -43,9 +51,19 @@ package body Spawn.Signals is
 
       procedure Handle_Signal
       is
+         C : aliased Interfaces.C.char_array (1 .. 1) := (1 => 'a');
       begin
          pragma Debug (L.Log_File ("Signal received"));
-         null;
+         declare
+            use type Spawn.OS.ssize_t;
+            Res : constant Spawn.OS.ssize_t
+              := Spawn.OS.write (World.Self_Communication_Write, C, 1);
+         begin
+            if Res = -1 then
+               raise Spawn.Pool.Pool_Error with
+                 "Cannot write to self-communincation pipe";
+            end if;
+         end;
       end Handle_Signal;
 
    end Signal_Handler_Type;

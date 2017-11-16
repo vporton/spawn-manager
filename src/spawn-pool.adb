@@ -30,6 +30,7 @@
 with Ada.Containers.Ordered_Maps;
 with Ada.Strings.Unbounded;
 with Ada.Unchecked_Deallocation;
+with Interfaces.C;
 
 with GNAT.OS_Lib;
 
@@ -37,10 +38,16 @@ with Anet.Sockets.Unix;
 with Anet.Streams;
 with Anet.Util;
 
+with Spawn.OS;
+with Spawn.World_Internals;
+with Spawn.Signals;
 with Spawn.Types;
 with Spawn.Logger;
 
 package body Spawn.Pool is
+
+   World : Spawn.World_Internals.World_Internals_Type renames
+     Spawn.World_Internals.World;
 
    Mngr_Bin  : constant String := "spawn_manager";
    Addr_Base : constant String := "spawn_manager-";
@@ -90,8 +97,22 @@ package body Spawn.Pool is
 
    procedure Cleanup
    is
+      procedure Free is
+        new Ada.Unchecked_Deallocation (Spawn.Signals.Signal_Handler_Type,
+                                        Spawn.Signals.Signal_Handler_Access);
    begin
       Sockets.Cleanup;
+      Free (World.Signal_Handler);
+      declare
+         Res1 : constant Interfaces.C.int :=
+           Spawn.OS.close (World.Self_Communication_Read);
+         Res2 : constant Interfaces.C.int :=
+           Spawn.OS.close (World.Self_Communication_Write);
+         pragma Unreferenced (Res1);
+         pragma Unreferenced (Res2);
+      begin
+         null;
+      end;
    end Cleanup;
 
    -------------------------------------------------------------------------
@@ -141,6 +162,21 @@ package body Spawn.Pool is
          raise Pool_Error with "Socket directory '" & Socket_Dir
            & "' does not exist";
       end if;
+
+      declare
+         fd : Spawn.OS.Two_FDs;
+         use type Interfaces.C.int;
+         Res : constant Interfaces.C.int := Spawn.OS.pipe (fd);
+      begin
+         if Res /= 0 then
+            raise Pool_Error with "Cannot create self-communication pipe";
+         end if;
+         World.Self_Communication_Read  := fd (0);
+         World.Self_Communication_Write := fd (1);
+      end;
+
+      --  after World.Self_Communication_* created
+      World.Signal_Handler := new Spawn.Signals.Signal_Handler_Type;
 
       for M in 1 .. Manager_Count loop
          declare
