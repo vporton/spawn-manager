@@ -5,6 +5,9 @@
 
 * Refuse to use SIGINT, use SIGTERM?
 
+* sigaction() vs signal():
+  https://stackoverflow.com/a/23685817/856090
+
 Unbounded in-memory streams (choose one):
 
 http://www.dmitry-kazakov.de/ada/components.htm#Storage_Streams
