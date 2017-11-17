@@ -38,7 +38,6 @@ package Spawn.OS is
    --  TODO:
 --     type file_id is new integer;
 
-
    function write (file : int; b : in out char_array; length : size_t)
                    return ssize_t;
    pragma Import (C, write);

@@ -1,3 +1,6 @@
+* We stuck with this GCC bug:
+  https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83027
+
 * Use some unbounded string stream (where to get? write a new one?)
   The buffer of the string stream should be wrapped with a higher level
   packet, because it may be read as more than one recv() operation.
