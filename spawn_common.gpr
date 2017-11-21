@@ -13,6 +13,6 @@ project Spawn_Common is
                          "-gnato",
                          "-g");
 
-   Binder_Switches   := ("-E", "-F"); -- -F for https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83027
+   Binder_Switches   := ("-E", "-F"); -- -F for https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83027 (does not help anyway)
 
 end Spawn_Common;
